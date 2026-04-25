@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+
+class LiteApiService
+{
+    protected $apiKey;
+    protected $baseUrl = 'https://api.liteapi.travel/v3.0';
+
+    public function __construct()
+    {
+        $this->apiKey = config('services.liteapi.key');
+    }
+
+    public function searchHotels($cityCode, $checkIn, $checkOut, $adults = 2, $currency = 'USD')
+    {
+        $cacheKey = "hotels_{$cityCode}_{$checkIn}_{$checkOut}_{$adults}";
+
+        return Cache::remember($cacheKey, 600, function () use ($cityCode, $checkIn, $checkOut, $adults, $currency) {
+            $response = Http::withHeaders([
+                'X-API-Key' => $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->post("{$this->baseUrl}/hotels/rates", [
+                'hotelIds' => [],
+                'checkin' => $checkIn,
+                'checkout' => $checkOut,
+                'currency' => $currency,
+                'guestNationality' => 'US',
+                'occupancies' => [
+                    ['adults' => (int)$adults]
+                ],
+                'countryCode' => 'US',
+                'cityName' => $cityCode,
+            ]);
+
+            return $response->json();
+        });
+    }
+
+    public function preBook($rateId)
+    {
+        $response = Http::withHeaders([
+            'X-API-Key' => $this->apiKey,
+            'Content-Type' => 'application/json',
+        ])->post("{$this->baseUrl}/rates/prebook", [
+            'rateId' => $rateId,
+        ]);
+
+        return $response->json();
+    }
+
+    public function bookHotel($prebookId, $guestInfo)
+    {
+        $response = Http::withHeaders([
+            'X-API-Key' => $this->apiKey,
+            'Content-Type' => 'application/json',
+        ])->post("{$this->baseUrl}/rates/book", [
+            'prebookId' => $prebookId,
+            'holder'    => $guestInfo,
+        ]);
+
+        return $response->json();
+    }
+}
