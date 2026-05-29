@@ -8,9 +8,10 @@
     padding: 100px 0 50px; min-height: 380px; display:flex; align-items:center;
 }
 .nm-ticket-search { background:rgba(255,255,255,0.97); border-radius:16px; padding:24px 28px; margin-top:24px; box-shadow:0 8px 40px rgba(0,0,0,0.25); }
-.nm-ticket-search .form-control, .nm-ticket-search select { height:46px; border:1.5px solid #dde2ec; border-radius:10px; font-size:14px; }
+.nm-ticket-search .form-control, .nm-ticket-search select { height:52px; border:1.5px solid #dde2ec; border-radius:10px; font-size:14px; padding:12px 14px; }
+.nm-ticket-search select { -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
 .nm-ticket-search label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#666; }
-.nm-search-btn-gold { background:linear-gradient(135deg,#c9a84c,#e8c96a); color:#0a1628; border:none; height:46px; border-radius:10px; font-weight:800; font-size:15px; width:100%; }
+.nm-search-btn-gold { background:linear-gradient(135deg,#c9a84c,#e8c96a); color:#0a1628; border:none; height:52px; border-radius:10px; font-weight:800; font-size:15px; width:100%; }
 .nm-events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; margin-top:30px; }
 .nm-event-card { background:#fff; border-radius:14px; box-shadow:0 3px 16px rgba(0,0,0,0.08); overflow:hidden; transition:transform .2s,box-shadow .2s; display:flex; flex-direction:column; }
 .nm-event-card:hover { transform:translateY(-4px); box-shadow:0 10px 32px rgba(0,0,0,0.14); }

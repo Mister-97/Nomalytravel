@@ -6,9 +6,10 @@
 .ht-hero p { color:rgba(255,255,255,0.7); font-size:0.95rem; }
 .ht-form-card { background:#fff; border-radius:16px; padding:24px 28px; box-shadow:0 10px 40px rgba(0,0,0,0.25); }
 .ht-form-card label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#666; margin-bottom:4px; display:block; }
-.ht-form-card .form-control { height:46px; border:1.5px solid #dde2ec; border-radius:10px; font-size:14px; }
+.ht-form-card .form-control { height:52px; border:1.5px solid #dde2ec; border-radius:10px; font-size:14px; padding:12px 14px; }
+.ht-form-card select.form-control { -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
 .ht-form-card .form-control:focus { border-color:#C9A84C; box-shadow:none; }
-.ht-search-btn { background:linear-gradient(135deg,#C9A84C,#e8c96a); color:#070D1A; border:none; height:46px; border-radius:10px; font-weight:800; font-size:15px; width:100%; }
+.ht-search-btn { background:linear-gradient(135deg,#C9A84C,#e8c96a); color:#070D1A; border:none; height:52px; border-radius:10px; font-weight:800; font-size:15px; width:100%; }
 .ht-search-btn:hover { filter:brightness(1.08); }
 .ht-features { padding:48px 0; background:#f7f8fc; }
 .ht-feature-icon { font-size:2rem; color:#C9A84C; margin-bottom:12px; }
@@ -18,10 +19,10 @@
   .ht-hero { padding:28px 0 24px; }
   .ht-hero h1 { font-size:1.3rem; }
   .ht-form-card { padding:16px; border-radius:12px; margin-top:14px; }
-  .ht-form-card .form-control { height:44px; font-size:14px; }
-  .ht-form-card input[type="date"] { font-size:13px; padding:0 8px; }
+  .ht-form-card .form-control { height:48px; font-size:14px; }
+  .ht-form-card input[type="date"] { font-size:13px; padding:12px 8px; }
   .ht-form-card select.form-control { font-size:14px; }
-  .ht-search-btn { height:44px; font-size:15px; }
+  .ht-search-btn { height:48px; font-size:15px; }
 }
 </style>
 @endpush

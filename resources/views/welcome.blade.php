@@ -182,13 +182,14 @@ body { animation: nm-page-in .5s ease both; }
 /* ── Tabs ─────────────────────────────────────────── */
 .nm-gf-tabs {
   display: flex;
-  border-bottom: 1.5px solid var(--border);
   overflow-x: auto;
   scrollbar-width: none;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   overflow: hidden;
 }
 .nm-gf-tabs::-webkit-scrollbar { display: none; }
+.nm-gf-tab:focus { outline: none; }
+.nm-gf-tab:focus-visible { outline: none; }
 
 .nm-gf-tab {
   flex-shrink: 0;
@@ -218,7 +219,7 @@ body { animation: nm-page-in .5s ease both; }
 }
 
 /* ── Panel ─────────────────────────────────────────── */
-.nm-gf-panel { padding: 26px 28px 30px; }
+.nm-gf-panel { padding: 26px 28px 30px; border-top: 1.5px solid var(--border); }
 
 /* ── Trip type pills ───────────────────────────────── */
 .nm-trip-type {
@@ -426,7 +427,7 @@ body { animation: nm-page-in .5s ease both; }
   margin-bottom: 22px; flex-wrap: wrap; gap: 12px;
 }
 .nm-results-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 24px; font-weight: 600;
   color: var(--navy); margin: 0;
   letter-spacing: -.3px;
@@ -506,15 +507,17 @@ body { animation: nm-page-in .5s ease both; }
   background: var(--white); border-radius: var(--radius-md);
   box-shadow: var(--shadow-md); overflow: hidden;
   transition: transform .18s;
+  display: flex; flex-direction: column;
 }
 .nm-hc:hover, .nm-ec:hover { transform: translateY(-3px); }
-.nm-hc-img, .nm-ec-img { width: 100%; height: 160px; object-fit: cover; display: block; }
+.nm-hc-img, .nm-ec-img { width: 100%; height: 160px; object-fit: cover; display: block; flex-shrink: 0; }
 .nm-hc-ph, .nm-ec-ph {
   width: 100%; height: 160px;
   background: linear-gradient(135deg, var(--navy), var(--navy3));
   display: flex; align-items: center; justify-content: center; font-size: 2.8rem;
+  flex-shrink: 0;
 }
-.nm-hc-body, .nm-ec-body { padding: 16px 18px; }
+.nm-hc-body, .nm-ec-body { padding: 16px 18px; display: flex; flex-direction: column; flex: 1; }
 .nm-hc-name, .nm-ec-title {
   font-family: 'DM Sans', sans-serif;
   font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; line-height: 1.35;
@@ -523,9 +526,10 @@ body { animation: nm-page-in .5s ease both; }
 .nm-hc-meta, .nm-ec-meta { font-size: 12px; color: #999; line-height: 1.65; }
 .nm-hc-meta i, .nm-ec-meta i { color: var(--gold); width: 14px; }
 .nm-hc-price, .nm-ec-price {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 20px; font-weight: 600; color: var(--navy); margin-top: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 700; color: var(--navy); margin-top: auto; padding-top: 10px; letter-spacing: -.2px;
 }
+.nm-hc-price span, .nm-ec-price span { font-weight: 400; color: #888; font-size: 12px; }
 .nm-ec-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); margin-bottom: 4px; }
 .nm-hc-btn, .nm-ec-btn {
   display: block; margin-top: 12px;
@@ -624,6 +628,7 @@ body { animation: nm-page-in .5s ease both; }
   .nm-fc-mid { flex:1; padding:0 4px; }
   .nm-drawer { max-width: 100%; }
   .nm-gf-panel { padding: 18px; }
+  #panel-cars > .row > div:first-child { flex: 0 0 100% !important; max-width: 100% !important; width: 100% !important; }
   .nm-results-hdr { flex-direction: column; align-items: flex-start; }
   .nm-trip-type { flex-wrap: wrap; }
 }
@@ -685,7 +690,7 @@ body { animation: nm-page-in .5s ease both; }
 
     <div class="row justify-content-center">
       <div class="col-xl-11">
-        <div class="nm-search-wrap">
+        <div class="nm-search-wrap" id="nm-search">
         <div class="nm-gf-box">
 
           {{-- TABS --}}
@@ -927,8 +932,8 @@ body { animation: nm-page-in .5s ease both; }
                   </select>
                 </div>
               </div>
-              <div class="col-6 col-md-auto d-flex align-items-stretch" style="min-width:150px">
-                <button type="button" class="nm-gf-btn" onclick="nmSearchCars()">
+              <div class="col-12 col-md-auto d-flex align-items-stretch">
+                <button type="button" class="nm-gf-btn" onclick="nmSearchCars(this)">
                   <i class="fas fa-search"></i> Search Cars
                 </button>
               </div>
@@ -2259,22 +2264,63 @@ function nmSubmitBooking(e) {
 }
 
 
-function nmSearchCars() {
-    var pickup = document.getElementById('nm-car-pickup').value.trim();
-    var fromDate = document.getElementById('nm-car-from').value;
-    var toDate = document.getElementById('nm-car-to').value;
-    var age = document.getElementById('nm-car-age').value;
-    if (!pickup) { alert('Please enter a pick-up location.'); return; }
-    if (!fromDate) { alert('Please select a pick-up date.'); return; }
-    if (!toDate) { alert('Please select a return date.'); return; }
-    var rentcarsUrl = 'https://www.rentcars.com/en/results/?'
-        + 'pickUpPlace=' + encodeURIComponent(pickup)
-        + '&pickUpDate=' + encodeURIComponent(fromDate + 'T12:00:00')
-        + '&dropOffDate=' + encodeURIComponent(toDate + 'T12:00:00')
-        + '&driverAge=' + age
-        + '&currency=USD';
-    var affUrl = 'https://www.awin1.com/cread.php?awinmid=18808&awinaffid=2836196&ued=' + encodeURIComponent(rentcarsUrl);
-    window.open(affUrl, '_blank');
+function nmSearchCars(btn) {
+    var panel = (btn && btn.closest) ? btn.closest('.nm-gf-panel') : document.getElementById('panel-cars');
+    if (!panel) panel = document.getElementById('panel-cars');
+    var pickupEl  = panel ? panel.querySelector('input[type="text"]') : null;
+    var fromEl    = panel ? panel.querySelector('input[type="date"]:first-of-type') : null;
+    var toEl      = panel ? panel.querySelector('input[type="date"]:last-of-type') : null;
+    var ageEl     = panel ? panel.querySelector('select') : null;
+    if (!pickupEl || !fromEl || !toEl || !ageEl) {
+        nmError('Car search form not ready. Please refresh the page.');
+        return;
+    }
+    var pickup    = pickupEl.value.trim();
+    var fromDate  = fromEl.value;
+    var toDate    = toEl.value;
+    var age       = ageEl.value;
+    if (!pickup)   { nmError('Please enter a pick-up location.'); return; }
+    if (!fromDate) { nmError('Please select a pick-up date.'); return; }
+    if (!toDate)   { nmError('Please select a return date.'); return; }
+
+    nmLoading('Searching cars in ' + pickup + '…');
+
+    fetch('/api/home/cars?pickup=' + encodeURIComponent(pickup) + '&checkin=' + encodeURIComponent(fromDate) + '&checkout=' + encodeURIComponent(toDate) + '&age=' + age, {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.error) { nmError(d.error); return; }
+        nmRenderCars(d.cars || [], pickup, fromDate, toDate);
+    })
+    .catch(function() { nmError('Car search failed. Please try again.'); });
+}
+
+function nmRenderCars(cars, pickup, checkin, checkout) {
+    if (!cars || cars.length === 0) {
+        nmNone('No cars found for ' + pickup + '.');
+        return;
+    }
+    var html = '<div class="nm-results-hdr">'
+        + '<h4 class="nm-results-title"><i class="fas fa-car me-2" style="color:#c9a84c;"></i>Cars in ' + pickup + '</h4>'
+        + '<span style="font-size:13px;color:#888;">' + cars.length + ' vehicles • ' + checkin + ' – ' + checkout + '</span></div>'
+        + '<div class="nm-grid">';
+    cars.forEach(function(c) {
+        html += '<div class="nm-hc">'
+            + '<img src="' + c.image + '" class="nm-hc-img" alt="' + c.name + '" loading="lazy" onerror="this.outerHTML=\'<div class=nm-hc-ph>&#x1F697;</div>\'">'  
+            + '<div class="nm-hc-body">'
+            + '<div class="nm-hc-name">' + c.name + '</div>'
+            + '<div class="nm-hc-meta" style="font-size:11px;color:#888;margin-bottom:6px;">'
+            + '<i class="fas fa-building me-1" style="color:#c9a84c;"></i>' + c.company
+            + '  ·  <i class="fas fa-users me-1" style="color:#c9a84c;"></i>' + c.seats + ' seats'
+            + '  ·  <i class="fas fa-cog me-1" style="color:#c9a84c;"></i>' + c.transmission
+            + '</div>'
+            + '<div style="font-size:11px;color:#c9a84c;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">' + c.category + '</div>'
+            + '<a href="' + c.booking_url + '" target="_blank" class="nm-hc-btn" style="margin-top:14px;"><i class="fas fa-tag me-1"></i>See Prices &amp; Book</a>'
+            + '</div></div>';
+    });
+    html += '</div>';
+    nmShowResults(html);
 }
 
 // ── Typewriter effect ───────────────────────────────

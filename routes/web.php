@@ -120,7 +120,7 @@ Route::post('ajax_remove_file',[FilerController::class, 'fileDestroy'])->name('f
 Route::get('blog',[BlogsController::class, 'index'])->name('blogs.list');
 Route::get('blog/{slug}',[BlogsController::class, 'detail'])->name('blogs.detail');
 
-Route::get('/flights', function() { return redirect('/'); })->name('flights.list');
+Route::get('/flights', function() { return redirect('/#nm-search'); })->name('flights.list');
 
 Route::get('search-flights',[FlightsController::class, 'index'])->name('flights.search');
 Route::get('flight/{slug}',[FlightsController::class, 'detail'])->name('flights.detail');
@@ -154,8 +154,12 @@ Route::post('contact-us',[ContactusController::class, 'store'])->name('contact.p
 
 
 Route::get('/', function () {
-    
-    return view('welcome');
+    return response()->view('welcome')->withHeaders([
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma'        => 'no-cache',
+        'Expires'       => '0',
+        'X-LiteSpeed-Cache-Control' => 'no-cache',
+    ]);
 });
 
 Route::post('/hotel-booking', function (Request $request) {
@@ -817,6 +821,7 @@ Route::get('/api/home/concerts', function(Illuminate\Http\Request $request) {
     return response()->json($result);
 });
 Route::get("/api/home/hotels", [App\Http\Controllers\HotelController::class, "apiSearch"]);
+Route::get('/api/home/cars', [App\Http\Controllers\CarRentalController::class, 'search']);
 
 // Stripe PaymentIntent for inline flight booking
 Route::post('/api/flights/payment-intent', function(Illuminate\Http\Request $request) {

@@ -154,8 +154,8 @@
                   Travel <i class="fas fa-chevron-down nm-caret"></i>
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="nmTravelDd">
-                  <li><a class="dropdown-item" href="{{ url('/') }}#flights"><i class="fas fa-plane"></i> Flights</a></li>
-                  <li><a class="dropdown-item" href="{{ url('/') }}#hotels"><i class="fas fa-hotel"></i> Hotels</a></li>
+                  <li><a class="dropdown-item" href="{{ url('/flights') }}"><i class="fas fa-plane"></i> Flights</a></li>
+                  <li><a class="dropdown-item" href="{{ url('/hotels') }}"><i class="fas fa-hotel"></i> Hotels</a></li>
                   {{-- <li><a class="dropdown-item" href="{{ url('/tours') }}"><i class="fas fa-map-marked-alt"></i> Tours</a></li> --}}
                 </ul>
               </li>
