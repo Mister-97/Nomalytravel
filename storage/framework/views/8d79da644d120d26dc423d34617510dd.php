@@ -6,20 +6,18 @@
 ?>
 
 <div class="language-switcher dropdown">
-    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <span class="language-flag">
-            <?php if($currentLanguage && $currentLanguage->flag_image): ?>
-                <img src="<?php echo e(asset($currentLanguage->flag_image)); ?>" alt="<?php echo e($currentLanguage->name); ?> Flag" 
-                     style="max-width: 20px; max-height: 15px; vertical-align: middle;">
-            <?php else: ?>
+    <button class="btn lang-flag-btn dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <?php if($currentLanguage && $currentLanguage->flag_image): ?>
+            <img src="<?php echo e(asset($currentLanguage->flag_image)); ?>" alt="<?php echo e($currentLanguage->name); ?>">
+        <?php else: ?>
+            <span class="lang-flag-emoji">
                 <?php if($currentLocale == 'en'): ?> 🇺🇸
                 <?php elseif($currentLocale == 'es'): ?> 🇪🇸
                 <?php elseif($currentLocale == 'ar'): ?> 🇸🇦
                 <?php else: ?> 🇺🇸
                 <?php endif; ?>
-            <?php endif; ?>
-        </span>
-        <span class="language-name"><?php echo e($currentLanguage ? $currentLanguage->name : 'Language'); ?></span>
+            </span>
+        <?php endif; ?>
     </button>
     
     <ul class="dropdown-menu" aria-labelledby="languageDropdown">
@@ -49,34 +47,27 @@
 </div>
 
 <style>
-.language-switcher .dropdown-toggle {
-    display: flex;
+.lang-flag-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    border: 2px solid #e0e0e0 !important;
+    background: #fff !important;
+    overflow: hidden;
+    display: flex !important;
     align-items: center;
-    gap: 8px;
-    justify-content: space-between;
-    border-color:#eee;
-    font-size: 15px;
+    justify-content: center;
+    box-shadow: none !important;
 }
-
-.language-flag {
-    font-size: 1.2rem;
-}
-
-.language-name {
-    font-weight: 500;
-}
-
-.dropdown-item.active {
-    background-color: #e9ecef;
-    color: #495057;
-}
-
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-}
-.language-switcher .dropdown-menu{padding:5px;}
-.header-wrap .navbar .dropdown-menu li{padding:0;}
-.header-wrap .navbar .dropdown-menu li a{padding:6px 15px; display: flex; align-items: center;}
+.lang-flag-btn::after { display: none !important; }
+.lang-flag-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.lang-flag-btn .lang-flag-emoji { font-size: 20px; line-height: 1; }
+.language-switcher .dropdown-menu { min-width: 130px; padding: 5px; }
+.dropdown-item.active { background-color: #e9ecef; color: #495057; }
+.dropdown-item:hover { background-color: #f8f9fa; }
+.header-wrap .navbar .dropdown-menu li { padding: 0; }
+.header-wrap .navbar .dropdown-menu li a { padding: 6px 15px; display: flex; align-items: center; }
 
 /* RTL Support */
 body[dir="rtl"] {

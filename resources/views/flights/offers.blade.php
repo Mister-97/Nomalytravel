@@ -210,7 +210,7 @@
                                         <option value="" {{ request('airline') == null ? 'selected' : '' }}>All Airlines</option>
                                         @php
                                         // Normalize airlines: handles both string arrays and object arrays from different controllers
-                                        $usNames = ['United', 'Delta', 'American', 'Southwest', 'JetBlue', 'Alaska', 'Spirit', 'Frontier', 'Sun Country'];
+                                        $usNames = ['United', 'Delta', 'American', 'Southwest', 'JetBlue', 'Alaska', 'Frontier', 'Sun Country'];
                                         $usAirlineFound = [];
                                         $otherAirlines = [];
                                         if (!empty($airlines)) {

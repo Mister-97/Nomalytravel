@@ -19,11 +19,6 @@
                             <i class="fas fa-tachometer-alt me-2"></i>
                             Go to Dashboard
                         </a>
-                        
-                        <a href="{{ route('login') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-sign-in-alt me-2"></i>
-                            Login to Your Account
-                        </a>
                     </div>
 
                     <div class="mt-4">

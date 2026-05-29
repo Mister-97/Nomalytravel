@@ -63,7 +63,7 @@
                      </div>
                      <div class="tpinfo">
                      <h6>Send Email</h6>
-                     <a href="mailto:{{widget(1)->extra_field_3}}">{{widget(1)->extra_field_3}}</a>
+                     <a href="mailto:{{widget(1)->extra_field_2}}">{{widget(1)->extra_field_2}}</a>
                         </div>
                      </div>
 
@@ -73,7 +73,8 @@
                         </div>
                         <div class="tpinfo">
                         <h6>Call Us</h6>
-                        <a href="tel:{{widget(1)->extra_field_2}}">{{widget(1)->extra_field_2}}</a>
+                        @php $rawPhone = preg_replace('/\D/', '', (string)(widget(1)->extra_field_3)); @endphp
+                        <a href="tel:+1{{ $rawPhone }}">+1-{{ substr($rawPhone,0,3) }}-{{ substr($rawPhone,3,3) }}-{{ substr($rawPhone,6) }}</a>
                         </div>
                     </div>
                     

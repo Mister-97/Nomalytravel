@@ -14,6 +14,15 @@
 .ht-feature-icon { font-size:2rem; color:#C9A84C; margin-bottom:12px; }
 .ht-feature-title { font-size:15px; font-weight:700; color:#070D1A; }
 .ht-feature-text { font-size:13px; color:#777; }
+@media(max-width:767px){
+  .ht-hero { padding:28px 0 24px; }
+  .ht-hero h1 { font-size:1.3rem; }
+  .ht-form-card { padding:16px; border-radius:12px; margin-top:14px; }
+  .ht-form-card .form-control { height:44px; font-size:14px; }
+  .ht-form-card input[type="date"] { font-size:13px; padding:0 8px; }
+  .ht-form-card select.form-control { font-size:14px; }
+  .ht-search-btn { height:44px; font-size:15px; }
+}
 </style>
 @endpush
 
@@ -26,24 +35,24 @@
                 <div class="ht-form-card mt-4">
                     <form method="POST" action="{{ route('hotels.search') }}">
                         @csrf
-                        <div class="row g-3 align-items-end">
-                            <div class="col-md-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-12 col-md-4">
                                 <label>City / Destination</label>
                                 <input type="text" name="city" class="form-control" placeholder="e.g. Miami, New York, Paris" required value="{{ old('city') }}">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-6 col-md-2">
                                 <label>Check-in</label>
                                 <input type="date" name="check_in" class="form-control" required
                                     value="{{ old('check_in', date('Y-m-d', strtotime('+7 days'))) }}"
                                     min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-6 col-md-2">
                                 <label>Check-out</label>
                                 <input type="date" name="check_out" class="form-control" required
                                     value="{{ old('check_out', date('Y-m-d', strtotime('+9 days'))) }}"
                                     min="{{ date('Y-m-d', strtotime('+2 days')) }}">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-5 col-md-2">
                                 <label>Adults</label>
                                 <select name="adults" class="form-control">
                                     @for($i=1;$i<=6;$i++)
@@ -51,7 +60,7 @@
                                     @endfor
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-7 col-md-2">
                                 <button type="submit" class="ht-search-btn">
                                     <i class="fas fa-search me-1"></i> Search
                                 </button>

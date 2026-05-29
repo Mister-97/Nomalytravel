@@ -15,6 +15,17 @@
         <meta name="description" content="{{@$seo['meta_description']}}">
         <meta name="keywords" content="{{@$seo['meta_keywords']}}">
 
+        <!-- OpenGraph -->
+        <meta property="og:type"        content="website">
+        <meta property="og:site_name"   content="Nomaly Travel">
+        <meta property="og:title"       content="Nomaly Travel">
+        <meta property="og:description" content="{{@$seo['meta_description']}}">
+        <meta property="og:image"       content="{{ asset('images/nomalyopengraph.png') }}">
+        <meta property="og:url"         content="{{ url()->current() }}">
+        <meta name="twitter:card"       content="summary_large_image">
+        <meta name="twitter:title"      content="Nomaly Travel">
+        <meta name="twitter:image"      content="{{ asset('images/nomalyopengraph.png') }}">
+
         <!-- Fav Icon -->
 
     <link rel="shortcut icon" href="{{asset('favicon.ico') }}">
@@ -79,7 +90,7 @@
 
         <!-- Google Map --> 
         @if(empty($disableGmapAndCustomJs))
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMqMG_n4C0aAi3F8a82Q6s3hxDLrTXxe8&callback=initMap" async defer></script> 
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMqMG_n4C0aAi3F8a82Q6s3hxDLrTXxe8&callback=initMap&loading=async" async defer></script> 
         <script src="{{asset('js/gmap.js') }}"></script> 
         @endif
 

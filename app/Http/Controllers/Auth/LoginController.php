@@ -60,6 +60,6 @@ class LoginController extends Controller
             return redirect()->route('dashboard');
         }
     
-        return redirect("login")->withSuccess('Oppes! You have entered invalid credentials');
+        return back()->withErrors(['email' => 'Invalid email or password. Please try again.'])->withInput($request->only('email'));
     }
 }

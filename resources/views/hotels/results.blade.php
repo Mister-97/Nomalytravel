@@ -17,9 +17,9 @@
 .ht-card-loc { font-size:12px; color:#888; margin-bottom:8px; }
 .ht-card-loc i { color:#C9A84C; }
 .ht-card-stars { color:#C9A84C; font-size:12px; margin-bottom:8px; }
-.ht-card-price { font-size:22px; font-weight:900; color:#070D1A; margin-top:auto; }
+.ht-card-price { font-size:22px; font-weight:900; color:#070D1A; margin-bottom:12px; }
 .ht-card-price span { font-size:11px; font-weight:400; color:#999; }
-.ht-book-btn { display:block; margin-top:10px; background:#070D1A; color:#C9A84C; border-radius:9px; padding:9px; text-align:center; font-size:13px; font-weight:700; border:2px solid #C9A84C; cursor:pointer; text-decoration:none; transition:all .2s; }
+.ht-book-btn { display:block; margin-top:auto; background:#070D1A; color:#C9A84C; border-radius:9px; padding:9px; text-align:center; font-size:13px; font-weight:700; border:2px solid #C9A84C; cursor:pointer; text-decoration:none; transition:all .2s; }
 .ht-book-btn:hover { background:#C9A84C; color:#070D1A; }
 .ht-empty { text-align:center; padding:60px 20px; color:#888; }
 .ht-empty i { font-size:3rem; color:#C9A84C; margin-bottom:16px; display:block; }
@@ -61,10 +61,7 @@
                         $minRate = collect($hotel['roomTypes'])->min('rates.0.retailRate.total.0.amount')
                                 ?? collect($hotel['roomTypes'])->min('minRate');
                     }
-                    $rateId   = null;
-                    if (!empty($hotel['roomTypes'])) {
-                        $rateId = $hotel['roomTypes'][0]['rates'][0]['rateId'] ?? ($hotel['roomTypes'][0]['rateId'] ?? null);
-                    }
+                    $offerId  = $hotel['offerId'] ?? ($hotel['roomTypes'][0]['offerId'] ?? null);
                 @endphp
                 <div class="ht-card">
                     @if($img)
@@ -86,13 +83,7 @@
                         @if($minRate)
                         <div class="ht-card-price">${{ number_format($minRate, 0) }} <span>/ night</span></div>
                         @endif
-                        @if($rateId)
-                        <form method="POST" action="{{ route('hotels.prebook') }}">
-                            @csrf
-                            <input type="hidden" name="rate_id" value="{{ $rateId }}">
-                            <button type="submit" class="ht-book-btn">Book Now &rarr;</button>
-                        </form>
-                        @endif
+                        <a href="{{ route('hotels.detail', $hotelId) }}?check_in={{ $search['check_in'] }}&check_out={{ $search['check_out'] }}&adults={{ $search['adults'] }}" class="ht-book-btn">View Hotel &amp; Rooms &rarr;</a>
                     </div>
                 </div>
                 @endforeach

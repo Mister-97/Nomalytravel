@@ -15,6 +15,17 @@
         <meta name="description" content="<?php echo e(@$seo['meta_description']); ?>">
         <meta name="keywords" content="<?php echo e(@$seo['meta_keywords']); ?>">
 
+        <!-- OpenGraph -->
+        <meta property="og:type"        content="website">
+        <meta property="og:site_name"   content="Nomaly Travel">
+        <meta property="og:title"       content="Nomaly Travel">
+        <meta property="og:description" content="<?php echo e(@$seo['meta_description']); ?>">
+        <meta property="og:image"       content="<?php echo e(asset('images/nomalyopengraph.png')); ?>">
+        <meta property="og:url"         content="<?php echo e(url()->current()); ?>">
+        <meta name="twitter:card"       content="summary_large_image">
+        <meta name="twitter:title"      content="Nomaly Travel">
+        <meta name="twitter:image"      content="<?php echo e(asset('images/nomalyopengraph.png')); ?>">
+
         <!-- Fav Icon -->
 
     <link rel="shortcut icon" href="<?php echo e(asset('favicon.ico')); ?>">
@@ -80,7 +91,7 @@
 
         <!-- Google Map --> 
         <?php if(empty($disableGmapAndCustomJs)): ?>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMqMG_n4C0aAi3F8a82Q6s3hxDLrTXxe8&callback=initMap" async defer></script> 
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMqMG_n4C0aAi3F8a82Q6s3hxDLrTXxe8&callback=initMap&loading=async" async defer></script> 
         <script src="<?php echo e(asset('js/gmap.js')); ?>"></script> 
         <?php endif; ?>
 

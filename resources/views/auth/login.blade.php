@@ -42,10 +42,13 @@
                     <div class="invalid-feedback">{{ $errors->first('password') ?? 'Please enter your password.' }}</div>
                 </div>
 
-                <!-- Remember me -->
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="remember" value="" id="form2Example31" checked="">
-                    <label class="form-check-label" for=""> Remember me </label>
+                <!-- Remember me + Forgot password -->
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" name="remember" value="" id="form2Example31" checked="">
+                        <label class="form-check-label" for="form2Example31"> Remember me </label>
+                    </div>
+                    <a href="{{ route('password.request') }}" class="text-muted small">Forgot password?</a>
                 </div>
 
                 <!-- Submit button -->

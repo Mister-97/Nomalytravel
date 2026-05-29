@@ -10,6 +10,21 @@
     transition: all 0.25s;
     -webkit-transition: all 0.25s;
 }
+@media (max-width: 767px) {
+    /* Stack columns vertically, override the row-reverse !important */
+    .serviceslisting li,
+    .serviceslisting li:nth-child(2n) { flex-direction: column !important; }
+    /* Remove side padding that shifts content off-center */
+    .servtext,
+    .serviceslisting li:nth-child(2n) .servtext { padding: 20px 0 0 !important; }
+    /* h4 uses display:flex — must use justify-content, not text-align */
+    .servtext h4 { justify-content: center !important; font-size: 22px !important; flex-wrap: nowrap !important; white-space: nowrap; }
+    .servtext h4 i { font-size: 20px !important; margin-right: 10px !important; }
+    /* Everything else */
+    .servtext p { text-align: center !important; }
+    .serviceslisting li .readmore { text-align: center !important; }
+    .readmore .btn { display: block !important; width: 100% !important; }
+}
         </style>
 
 <div class="pageheader">            

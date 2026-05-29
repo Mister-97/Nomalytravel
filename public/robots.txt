@@ -1,2 +1,14 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /profile
+Disallow: /clear-cache
+Disallow: /storage-link
+Disallow: /link-storage
+Disallow: /test-paystack-config
+Disallow: /test-paystack-service
+Disallow: /test-paystack-currency
+Disallow: /test-currency-conversion
+
+Sitemap: https://nomalytravel.com/sitemap.xml

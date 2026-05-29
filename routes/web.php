@@ -55,17 +55,6 @@ use Illuminate\Support\Str;
 Route::get('services',[ServicesController::class, 'index'])->name('services.list');
 Route::get('service/{slug}',[ServicesController::class, 'detail'])->name('services.detail');
 
-Route::get('/storage-link', function () {
-    Artisan::call('storage:link');
-    return 'Storage link created successfully!';
-});
-
-Route::get('/link-storage', function () { 
-    //dd(public_path());    
-   $target = '/storage/app/public';
-   $shortcut = '/public/storage';
-   symlink($target, $shortcut);
-});
 
 
 
@@ -80,16 +69,6 @@ Route::post('/hotels/review/reply', [ReviewController::class, 'store_reply'])->m
 Route::get('/invoice/{booking_id}', [InvoiceController::class, 'generateInvoice'])->name('invoice.generate');
 
 
-Route::get('/clear-cache', function () {
-    Artisan::call('config:clear');
-    Artisan::call('route:clear');
-    Artisan::call('view:clear');
-    Artisan::call('cache:clear');
-    Artisan::call('clear-compiled');
-    Artisan::call('optimize:clear');
-
-    return 'All caches cleared.';
-});
 
 use Livewire\Livewire;
 
@@ -141,7 +120,7 @@ Route::post('ajax_remove_file',[FilerController::class, 'fileDestroy'])->name('f
 Route::get('blog',[BlogsController::class, 'index'])->name('blogs.list');
 Route::get('blog/{slug}',[BlogsController::class, 'detail'])->name('blogs.detail');
 
-Route::get('/flights', function() { return view('flights.index'); })->name('flights.list');
+Route::get('/flights', function() { return redirect('/'); })->name('flights.list');
 
 Route::get('search-flights',[FlightsController::class, 'index'])->name('flights.search');
 Route::get('flight/{slug}',[FlightsController::class, 'detail'])->name('flights.detail');
@@ -581,130 +560,13 @@ Route::get('/paypal-cancel/{id}', function ($id) {
 })->name('hotel-payment');
 
 Route::get('/payment-success', function (Request $request) {
-        dd($request);
+    return redirect('/dashboard')->with('success', 'Payment completed successfully.');
 })->name('payment-success');
 
-// Test route for Paystack configuration
-Route::get('/test-paystack-config', function () {
-    $config = [
-        'public_key' => config('services.paystack.public_key'),
-        'secret_key' => config('services.paystack.secret_key'),
-        'merchant_email' => config('services.paystack.merchant_email'),
-        'url' => config('services.paystack.url'),
-    ];
-    
-    $widget32 = widget(32);
-    $widgetData = $widget32 ? [
-        'title' => $widget32->title,
-        'extra_field_1' => $widget32->extra_field_1,
-        'extra_field_2' => $widget32->extra_field_2,
-        'extra_field_3' => $widget32->extra_field_3,
-    ] : null;
-    
-    return response()->json([
-        'config' => $config,
-        'widget_32' => $widgetData,
-    ]);
-})->name('test.paystack.config');
-
-// Test route for PaystackService
-Route::get('/test-paystack-service', function () {
-    try {
-        $paystackService = app(\App\Services\PaystackService::class);
-        
-        $testData = [
-            'email' => 'test@example.com',
-            'amount' => 1000, // 10 NGN
-            'currency' => 'NGN',
-            'reference' => 'TEST_' . uniqid(),
-            'callback_url' => 'https://example.com/callback',
-            'metadata' => ['test' => true],
-        ];
-        
-        $result = $paystackService->initializeTransaction($testData);
-        
-        return response()->json([
-            'test_data' => $testData,
-            'result' => $result,
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ], 500);
-    }
-})->name('test.paystack.service');
-
-// Test route for Paystack currency
-Route::get('/test-paystack-currency', function () {
-    try {
-        $paystackService = app(\App\Services\PaystackService::class);
-        
-        // Test with USD to NGN conversion
-        $originalAmount = 10; // 10 USD
-        $ngnAmount = $originalAmount * 1500; // Convert to NGN
-        
-        $testData = [
-            'email' => 'test@example.com',
-            'amount' => $ngnAmount, // 15000 NGN (10 USD * 1500)
-            'currency' => 'NGN',
-            'reference' => 'TEST_CURRENCY_' . uniqid(),
-            'callback_url' => 'https://example.com/callback',
-            'metadata' => [
-                'test' => true,
-                'original_currency' => 'USD',
-                'original_amount' => $originalAmount,
-                'conversion_rate' => 1500,
-            ],
-        ];
-        
-        $result = $paystackService->initializeTransaction($testData);
-        
-        return response()->json([
-            'test_data' => $testData,
-            'result' => $result,
-            'note' => 'Testing NGN currency support',
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ], 500);
-    }
-})->name('test.paystack.currency');
-
-// Test route for currency conversion
-Route::get('/test-currency-conversion', function () {
-    $testCases = [
-        ['amount' => 100, 'from' => 'USD', 'to' => 'NGN'],
-        ['amount' => 50, 'from' => 'EUR', 'to' => 'NGN'],
-        ['amount' => 25, 'from' => 'GBP', 'to' => 'NGN'],
-        ['amount' => 1000, 'from' => 'NGN', 'to' => 'NGN'],
-    ];
-    
-    $results = [];
-    foreach ($testCases as $test) {
-        $converted = \App\Helpers\CurrencyHelper::convert($test['amount'], $test['from'], $test['to']);
-        $formatted = \App\Helpers\CurrencyHelper::formatAmount($converted, $test['to']);
-        
-        $results[] = [
-            'original' => \App\Helpers\CurrencyHelper::formatAmount($test['amount'], $test['from']),
-            'converted' => $formatted,
-            'rate' => \App\Helpers\CurrencyHelper::getConversionRate($test['from'], $test['to']),
-        ];
-    }
-    
-    return response()->json([
-        'test_cases' => $testCases,
-        'results' => $results,
-        'supported_currencies' => \App\Helpers\CurrencyHelper::getSupportedCurrencies(),
-    ]);
-})->name('test.currency.conversion');
 
 Route::get('/flight-payment/{id}', function (Request $request,$id) {
 
-    $skey = 'sk_test_Jc5YJMkPz81EuYgEy2eGPMdp';
-    Stripe::setApiKey($skey);
+    Stripe::setApiKey(config('services.stripe.secret'));
 
     $hotel = Flights::where('id',$id)->first();
     $hotelM = App\Models\ModulesData::where('id', $hotel->flight_id)->first();
@@ -774,6 +636,20 @@ Route::post('/email/resend', [App\Http\Controllers\Auth\VerificationController::
 Route::get('/sports', [App\Http\Controllers\TicketsController::class, 'sports'])->name('tickets.sports');
 Route::get('/concerts', [App\Http\Controllers\TicketsController::class, 'concerts'])->name('tickets.concerts');
 
+// Hotels (must be before wildcard slug/module routes)
+Route::get("/hotels", [App\Http\Controllers\HotelController::class, "index"])->name("hotels.index");
+Route::post("/hotels/search", [App\Http\Controllers\HotelController::class, "search"])->name("hotels.search");
+Route::get("/hotels/detail/{hotelId}", [App\Http\Controllers\HotelController::class, "detail"])->name("hotels.detail");
+Route::post("/hotels/prebook", [App\Http\Controllers\HotelController::class, "prebook"])->name("hotels.prebook");
+Route::post("/hotels/book", [App\Http\Controllers\HotelController::class, "book"])->name("hotels.book");
+Route::post("/hotels/payment-intent", [App\Http\Controllers\HotelController::class, "paymentIntent"])->name("hotels.payment.intent");
+Route::post('/api/home/hotels', [App\Http\Controllers\HotelController::class, 'searchJson'])->name('hotels.home.search');
+Route::get('/api/home/hotels/detail/{hotelId}', [App\Http\Controllers\HotelController::class, 'homeDetail'])->name('hotels.home.detail');
+Route::post('/api/home/hotels/prebook', [App\Http\Controllers\HotelController::class, 'homePrebook'])->name('hotels.home.prebook');
+
+Route::get('/terms-of-service', fn() => view('terms'))->name('terms.show');
+Route::get('/privacy-policy', fn() => view('policy'))->name('policy.show');
+Route::get('/terms', fn() => redirect('/terms-of-service'));
 Route::get('/{slug}',[CmsController::class, 'index'])->name('cms.page');
 
 Route::get('/{module}/delete/{id}', [ModulesDataController::class,'destroy'])->name('modules.data.delete');
@@ -929,14 +805,14 @@ Route::get('/api/home/flights', [App\Http\Controllers\DuffelController::class, '
 
 // Sports events JSON
 Route::get('/api/home/sports', function(Illuminate\Http\Request $request) {
-    $service = app(App\Services\TicketmasterService::class);
+    $service = app(App\Services\TicketSqueezeService::class);
     $result  = $service->getSportsEvents($request->only('city','keyword','date'));
     return response()->json($result);
 });
 
 // Concerts JSON
 Route::get('/api/home/concerts', function(Illuminate\Http\Request $request) {
-    $service = app(App\Services\TicketmasterService::class);
+    $service = app(App\Services\TicketSqueezeService::class);
     $result  = $service->getConcertEvents($request->only('city','keyword','date'));
     return response()->json($result);
 });
@@ -944,11 +820,11 @@ Route::get("/api/home/hotels", [App\Http\Controllers\HotelController::class, "ap
 
 // Stripe PaymentIntent for inline flight booking
 Route::post('/api/flights/payment-intent', function(Illuminate\Http\Request $request) {
-    Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+    Stripe::setApiKey(config('services.stripe.secret'));
     $amount = max(50, (int)(floatval($request->input('amount',0)) * 100));
     $currency = strtolower($request->input('currency','usd'));
     try {
-        $intent = Stripe\PaymentIntent::create([
+        $intent = PaymentIntent::create([
             'amount'      => $amount,
             'currency'    => $currency,
             'description' => 'Nomaly Travel - Flight booking',
@@ -1034,41 +910,3 @@ Route::get('/api/seat-map/{offer_id}', function($offer_id) {
     }
 });
 
-// Duffel Seat Map API
-Route::get('/api/seat-map/{offer_id}', function($offer_id) {
-    $token = (function(){ try { return widget(29)->extra_field_1; } catch(\Exception $e){ return null; } })() ?? env('DUFFEL_ACCESS_TOKEN') ?? env('DUFFEL_API_KEY');
-    if (!$token) { return response()->json(['error' => 'API not configured']); }
-    try {
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => 'https://api.duffel.com/air/seat_maps?offer_id=' . urlencode($offer_id),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
-                'Authorization: Bearer ' . $token,
-                'Duffel-Version: v2',
-                'Accept: application/json',
-            ],
-            CURLOPT_TIMEOUT => 15,
-        ]);
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        if ($httpCode !== 200) {
-            $err = json_decode($response, true);
-            return response()->json(['error' => ($err['errors'][0]['message'] ?? 'Seat map not available')]);
-        }
-        $data = json_decode($response, true);
-        $seatMaps = $data['data'] ?? [];
-        if (empty($seatMaps)) {
-            return response()->json(['error' => 'No seat map data available']);
-        }
-        $cabins = $seatMaps[0]['cabins'] ?? [];
-        return response()->json(['cabins' => $cabins, 'total' => count($seatMaps)]);
-    } catch (Exception $e) {
-        return response()->json(['error' => 'Seat map unavailable']);
-    }
-});
-
-Route::get("/hotels", [App\Http\Controllers\HotelController::class, "index"])->name("hotels.index");
-Route::post("/hotels/search", [App\Http\Controllers\HotelController::class, "search"])->name("hotels.search");
-Route::post("/hotels/prebook", [App\Http\Controllers\HotelController::class, "prebook"])->name("hotels.prebook");

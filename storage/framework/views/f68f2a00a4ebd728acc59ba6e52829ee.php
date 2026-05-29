@@ -71,12 +71,19 @@ body { animation: nm-page-in .5s ease both; }
   align-items: center;
 }
 
-/* Background photo */
+/* Background video overlay */
 .nm-hero::before {
   content: '';
   position: absolute; inset: 0;
-  background: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&q=80') center/cover no-repeat;
-  opacity: .08;
+  background: rgba(10,22,40,0.75);
+  z-index: 1;
+}
+.nm-hero-video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* Gold radial glow — top right */
@@ -454,14 +461,14 @@ body { animation: nm-page-in .5s ease both; }
   text-align: center; cursor: pointer; transition: all .15s;
 }
 .nm-date-pill:hover { border-color: var(--navy); background: var(--white); }
-.nm-date-pill.nm-dp-sel { background: var(--navy); border-color: var(--navy); }
+.nm-date-pill.nm-dp-sel { background: var(--gold); border-color: var(--gold); }
 .nm-date-pill.nm-dp-cheap { border-color: #27ae60; }
 .nm-dp-day { font-size: 10px; color: #999; margin-bottom: 2px; font-family:'DM Sans',sans-serif; }
-.nm-date-pill.nm-dp-sel .nm-dp-day { color: rgba(255,255,255,.6); }
+.nm-date-pill.nm-dp-sel .nm-dp-day { color: rgba(10,22,40,.6); }
 .nm-dp-dt { font-size: 12px; font-weight: 700; color: var(--navy); font-family:'DM Sans',sans-serif; }
-.nm-date-pill.nm-dp-sel .nm-dp-dt { color: var(--gold); }
+.nm-date-pill.nm-dp-sel .nm-dp-dt { color: var(--navy); }
 .nm-dp-price { font-size: 12px; font-weight: 700; color: #27ae60; margin-top: 3px; font-family:'DM Sans',sans-serif; }
-.nm-date-pill.nm-dp-sel .nm-dp-price { color: var(--gold); }
+.nm-date-pill.nm-dp-sel .nm-dp-price { color: var(--navy); }
 .nm-dp-price.loading { color: #bbb; animation: nm-blink 1.2s ease infinite; }
 
 /* ── Sort bar ─────────────────────────────────────── */
@@ -598,11 +605,10 @@ body { animation: nm-page-in .5s ease both; }
 
 /* ── We Fly With ───────────────────────────────── */
 .airline-logos {
-  display: flex; flex-wrap: nowrap;
+  display: flex; flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 24px; padding: 4px 12px;
-  overflow-x: auto; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  gap: 24px 32px; padding: 4px 12px;
 }
 .airline-logos::-webkit-scrollbar { display: none; }
 .airline-logos img {
@@ -633,17 +639,44 @@ body { animation: nm-page-in .5s ease both; }
   .nm-gf-box { border-radius: 16px; }
   .nm-fc-price { font-size:14px; }
 }
+@media (max-width: 600px) {
+  .nm-tab-cars { font-size: 10px; }
+  .nm-gf-tabs { display: flex; }
+  .nm-gf-tab {
+    flex: 1;
+    padding: 14px 4px;
+    font-size: 11px;
+    gap: 4px;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .nm-gf-tab i { font-size: 11px; }
+}
+
 /* ── Adults Stepper ── */
-.nm-stepper{display:flex;align-items:center;gap:4px;}
+.nm-stepper{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;}
 .nm-step-btn{width:30px;height:30px;border:1.5px solid #c9a84c;background:#fff;color:#c9a84c;font-size:18px;line-height:1;cursor:pointer;border-radius:6px;flex-shrink:0;padding:0;}
 .nm-step-btn:hover{background:#c9a84c;color:#fff;}
 .nm-stepper input[type=number]{width:38px;text-align:center;border:1.5px solid #dce0ea;border-radius:6px;height:30px;font-size:15px;font-weight:700;-moz-appearance:textfield;background:#fff;}
 .nm-stepper input[type=number]::-webkit-inner-spin-button,.nm-stepper input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+
+.nm-al-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px 5px 8px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;text-decoration:none;cursor:pointer;transition:all .15s;color:#0a1628;font-size:12px;font-weight:600;}
+.nm-al-chip:hover{border-color:#c9a84c;background:#fffdf5;color:#0a1628;}
+.nm-show-more-btn{display:block;width:100%;padding:10px;margin:4px 0 12px;background:#f5f7fa;border:1.5px dashed #ccc;border-radius:10px;color:#555;font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:background .15s;}
+.nm-show-more-btn:hover{background:#eef0f5;border-color:#aaa;color:#0a1628;}
+
+#nm-type-word { display: inline-block; }
+#nm-cursor { display:inline-block; color:var(--gold); animation:nm-blink 1s step-end infinite; }
+@keyframes nm-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.nm-aiop { display:block; font-size:0.75rem; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-top:10px; opacity:.9; }
 </style>
 <?php $__env->stopPush(); ?>
 
 
 <div class="nm-hero">
+  <video class="nm-hero-video" autoplay muted loop playsinline>
+    <source src="/videos/herovid.mp4" type="video/mp4">
+  </video>
   <div class="nm-hero-accent"></div>
   <div class="nm-hero-glow2"></div>
   <div class="container nm-hero-inner">
@@ -651,9 +684,9 @@ body { animation: nm-page-in .5s ease both; }
     <div class="text-center mb-5">
       <div class="nm-hero-eyebrow">Premium Travel</div>
       <h1 class="nm-hero-headline">
-        Your Journey.<br><em>Your Way.</em>
+        <span id="nm-type-word">Your Journey.</span><br><em>Your Way.</em>
       </h1>
-      <p class="nm-hero-sub">Flights · Hotels · Sports · Concerts — all in one place</p>
+      <p class="nm-hero-sub">Flights · Hotels · Sports · Concerts</p><p style="font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#c9a84c;margin:8px 0 0;opacity:1;">All In One Place</p>
     </div>
 
     <div class="row justify-content-center">
@@ -686,11 +719,10 @@ body { animation: nm-page-in .5s ease both; }
               <small style="font-size:9px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;">We Fly With:</small>
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/AA.svg" alt="American Airlines" title="American Airlines" style="height:32px;max-width:90px;object-fit:contain;opacity:.8;flex-shrink:0;">
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/F9.svg" alt="Frontier" title="Frontier" style="height:32px;max-width:90px;object-fit:contain;opacity:.8;flex-shrink:0;">
-              <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/NK.svg" alt="Spirit" title="Spirit" style="height:32px;max-width:90px;object-fit:contain;opacity:.8;flex-shrink:0;">
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/B6.svg" alt="JetBlue" title="JetBlue" style="height:32px;max-width:90px;object-fit:contain;opacity:.8;flex-shrink:0;">
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/AS.svg" alt="Alaska" title="Alaska Airlines" style="height:32px;max-width:90px;object-fit:contain;opacity:.8;flex-shrink:0;">
-              <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/UA.svg" alt="United" title="United Airlines" style="height:32px;max-width:90px;object-fit:contain;opacity:.4;filter:grayscale(1);flex-shrink:0;">
-              <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/DL.svg" alt="Delta" title="Delta Air Lines" style="height:32px;max-width:90px;object-fit:contain;opacity:.4;filter:grayscale(1);flex-shrink:0;">
+              <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/UA.svg" alt="United" title="United Airlines" style="height:32px;max-width:90px;object-fit:contain;opacity:.9;flex-shrink:0;">
+              <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/DL.svg" alt="Delta" title="Delta Air Lines" style="height:32px;max-width:90px;object-fit:contain;opacity:.9;flex-shrink:0;">
             </div>
             <div class="nm-trip-type">
               <label><input type="radio" name="nm_trip" value="oneway" checked> One way</label>
@@ -725,8 +757,8 @@ body { animation: nm-page-in .5s ease both; }
                   <input type="date" id="nm-return" min="<?php echo e(date('Y-m-d')); ?>">
                 </div>
               </div>
-              <div class="col-4 col-md-2">
-                <div class="nm-gf-field">
+              <div class="col-6 col-md-2">
+                <div class="nm-gf-field" style="align-items:center;text-align:center;">
                   <label>Adults</label>
                   <div class="nm-stepper">
                     <button type="button" class="nm-step-btn" onclick="nmStep('nm-adults',-1)">&#8722;</button>
@@ -735,7 +767,7 @@ body { animation: nm-page-in .5s ease both; }
                   </div>
                 </div>
               </div>
-              <div class="col-8 col-md-2">
+              <div class="col-6 col-md-2">
                 <div class="nm-gf-field">
                   <label>Cabin Class</label>
                   <select id="nm-cabin">
@@ -756,43 +788,43 @@ body { animation: nm-page-in .5s ease both; }
 
           
           <div id="panel-hotels" class="nm-gf-panel d-none">
-            <div class="row g-2 align-items-stretch">
-              <div class="col-12 col-md-4">
+            <div class="row g-2">
+              <div class="col-12">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-map-marker-alt"></i>Destination</label>
-                  <input type="text" id="nm-h-dest" list="nm-city-list" autocomplete="off" placeholder="City, resort, hotel…">
+                  <input type="text" name="city" id="nm-h-dest" autocomplete="off" placeholder="City, resort, hotel…">
                 </div>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-6">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-calendar"></i>Check-in</label>
-                  <input type="date" id="nm-h-in" min="<?php echo e(date('Y-m-d')); ?>">
+                  <input type="date" name="check_in" id="nm-h-in" min="<?php echo e(date('Y-m-d')); ?>">
                 </div>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-6">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-calendar-check"></i>Check-out</label>
-                  <input type="date" id="nm-h-out" min="<?php echo e(date('Y-m-d')); ?>">
+                  <input type="date" name="check_out" id="nm-h-out" min="<?php echo e(date('Y-m-d')); ?>">
                 </div>
               </div>
-              <div class="col-6 col-md-1">
+              <div class="col-6">
                 <div class="nm-gf-field">
-                  <label>Adults</label>
-                  <select id="nm-h-adults">
+                  <label><i class="fas fa-user"></i>Adults</label>
+                  <select name="adults" id="nm-h-adults">
                     <?php for($i=1;$i<=9;$i++): ?><option value="<?php echo e($i); ?>" <?php if($i==2): ?> selected <?php endif; ?>><?php echo e($i); ?></option><?php endfor; ?>
                   </select>
                 </div>
               </div>
-              <div class="col-6 col-md-1">
+              <div class="col-6">
                 <div class="nm-gf-field">
-                  <label>Rooms</label>
-                  <select id="nm-h-rooms">
+                  <label><i class="fas fa-door-open"></i>Rooms</label>
+                  <select name="rooms" id="nm-h-rooms">
                     <?php for($i=1;$i<=5;$i++): ?><option value="<?php echo e($i); ?>"><?php echo e($i); ?></option><?php endfor; ?>
                   </select>
                 </div>
               </div>
-              <div class="col-12 col-md-auto d-flex align-items-stretch" style="min-width:150px">
-                <button type="button" class="nm-gf-btn" onclick="nmSearchHotels()">
+              <div class="col-12 d-flex align-items-stretch">
+                <button type="button" class="nm-gf-btn" id="nm-h-search-btn" onclick="nmSearchHotels()">
                   <i class="fas fa-search"></i> Search Hotels
                 </button>
               </div>
@@ -872,11 +904,40 @@ body { animation: nm-page-in .5s ease both; }
 
           
           <div id="panel-cars" class="nm-gf-panel d-none">
-            <div class="nm-cars-ph">
-              <i class="fas fa-car"></i>
-              <h5 style="font-family:'DM Sans',sans-serif;font-weight:700;color:var(--navy);margin-bottom:10px;">Car Rentals Coming Soon</h5>
-              <p style="color:#999;font-size:14px;max-width:400px;margin:0 auto 18px;">We're partnering with top rental companies worldwide to bring you the best rates.</p>
-              <a href="<?php echo e(url('/contact')); ?>" style="display:inline-block;background:var(--navy);color:var(--gold);border:2px solid var(--gold);border-radius:9px;padding:11px 28px;font-size:13px;font-weight:700;text-decoration:none;font-family:'DM Sans',sans-serif;">Get Notified</a>
+            <div class="row g-2">
+              <div class="col-12 col-md-4">
+                <div class="nm-gf-field">
+                  <label><i class="fas fa-map-marker-alt"></i>Pick-up Location</label>
+                  <input type="text" id="nm-car-pickup" autocomplete="off" placeholder="City or airport…">
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="nm-gf-field">
+                  <label><i class="fas fa-calendar"></i>Pick-up Date</label>
+                  <input type="date" id="nm-car-from" min="<?php echo e(date('Y-m-d')); ?>">
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="nm-gf-field">
+                  <label><i class="fas fa-calendar-check"></i>Return Date</label>
+                  <input type="date" id="nm-car-to" min="<?php echo e(date('Y-m-d')); ?>">
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="nm-gf-field">
+                  <label><i class="fas fa-user"></i>Driver Age</label>
+                  <select id="nm-car-age">
+                    <option value="30" selected>25–65</option>
+                    <option value="21">21–24</option>
+                    <option value="70">66–99</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-6 col-md-auto d-flex align-items-stretch" style="min-width:150px">
+                <button type="button" class="nm-gf-btn" onclick="nmSearchCars()">
+                  <i class="fas fa-search"></i> Search Cars
+                </button>
+              </div>
             </div>
           </div>
 
@@ -894,11 +955,10 @@ body { animation: nm-page-in .5s ease both; }
     <div class="airline-logos">
       <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/AA.svg" alt="American Airlines" title="American Airlines">
       <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/F9.svg" alt="Frontier Airlines" title="Frontier Airlines">
-      <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/NK.svg" alt="Spirit Airlines" title="Spirit Airlines">
       <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/B6.svg" alt="JetBlue" title="JetBlue">
       <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/AS.svg" alt="Alaska Airlines" title="Alaska Airlines">
-      <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/UA.svg" alt="United Airlines" title="United Airlines (Coming Soon)" style="opacity:0.3; filter:grayscale(1);">
-      <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/DL.svg" alt="Delta Air Lines" title="Delta Air Lines (Coming Soon)" style="opacity:0.3; filter:grayscale(1);">
+      <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/UA.svg" alt="United Airlines" title="United Airlines (Coming Soon)" style="opacity:.85;">
+      <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/DL.svg" alt="Delta Air Lines" title="Delta Air Lines (Coming Soon)" style="opacity:.85;">
     </div>
   </div>
 </section>
@@ -1483,6 +1543,7 @@ function nmLoading(msg) {
     document.getElementById('nm-results').style.display = '';
     // Immediate show without animation for loading state
 document.querySelector('.nm-results-inner').classList.add('nm-visible');
+}
 
 function nmError(msg) {
     nmShowResults('<div class="nm-alert nm-alert-err mt-2"><i class="fas fa-exclamation-circle me-2"></i>'+msg+'</div>');
@@ -1635,11 +1696,12 @@ function nmRenderFlights(offers, from, to, depart) {
     // Price calendar strip
     html += nmBuildPriceCalendar(from, to, depart);
 
-    html += '<div id="nm-fl-list">';
-    sorted.forEach(function(o){ html += nmFlightCard(o); });
-    html += '</div>';
+    html += '<div id="nm-fl-list"></div>';
 
     nmShowResults(html);
+    var _l = document.getElementById('nm-fl-list');
+    if (_l) nmRenderGrouped(sorted, _l);
+    nmRenderTPFlights(from, to, depart);
 
     // Fetch nearby date prices after render
     setTimeout(function(){ nmFetchNearbyPrices(from, to, depart); }, 600);
@@ -1776,6 +1838,82 @@ function nmFlightCard(offer) {
         +"</div>"
         +"</div></div>";
 }
+
+var NM_PER_AIRLINE = 5;
+
+function nmRenderGrouped(offers, list) {
+    var groups = {}, order = [];
+    offers.forEach(function(o) {
+        var n = (o.owner && o.owner.name) || "Unknown";
+        if (!groups[n]) { groups[n] = []; order.push(n); }
+        groups[n].push(o);
+    });
+    var html = "";
+    order.forEach(function(name) {
+        var show = groups[name].slice(0, NM_PER_AIRLINE);
+        var rest = groups[name].slice(NM_PER_AIRLINE);
+        show.forEach(function(o) { html += nmFlightCard(o); });
+        if (rest.length > 0) {
+            var hh = "";
+            rest.forEach(function(o) { hh += nmFlightCard(o); });
+            html += "<div class=\"nm-more-flights\" style=\"display:none;\">" + hh + "</div>";
+            html += "<button type=\"button\" class=\"nm-show-more-btn\" onclick=\"nmShowMore(this)\">"
+                  + "<i class=\"fas fa-chevron-down me-1\"></i>Show " + rest.length + " more " + name + " flights"
+                  + "</button>";
+        }
+    });
+    list.innerHTML = html;
+}
+
+function nmShowMore(btn) {
+    var h = btn.previousElementSibling;
+    if (h) h.style.display = "";
+    btn.style.display = "none";
+}
+
+function nmDirectChip(code, name, url, color) {
+    var short = name.replace(" Airlines","").replace(" Air Lines","").replace(" Airways","");
+    return "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener\" class=\"nm-al-chip\">"
+        + "<img src=\"https://pics.avs.io/32/32/" + code + ".png\" onerror=\"this.style.display='none'\" style=\"width:18px;height:18px;object-fit:contain;flex-shrink:0;\">"
+        + "<span>" + short + "</span>"
+        + "</a>";
+}
+
+function nmRenderTPFlights(from, to, depart) {
+    var list = document.getElementById("nm-fl-list");
+    if (!list) return;
+    var prev = document.getElementById("nm-tp-section");
+    if (prev) prev.remove();
+
+    var avsDate = depart.replace(/-/g, "");
+    var avsUrl = "https://www.aviasales.com/search/" + encodeURIComponent(from) + avsDate.substring(4,8) + encodeURIComponent(to) + "1?marker=441262";
+    var depParts = depart.split("-");
+    var dlDate = depParts[1] + "/" + depParts[2] + "/" + depParts[0];
+    var uaUrl  = "https://www.united.com/en/us/fsr/choose-flights?f=" + encodeURIComponent(from) + "&t=" + encodeURIComponent(to) + "&d=" + encodeURIComponent(depart) + "&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches";
+    var dlUrl  = "https://www.delta.com/";
+    var swUrl  = "https://www.southwest.com/";
+    var b6Url  = "https://www.jetblue.com/flights/" + encodeURIComponent(from) + "-" + encodeURIComponent(to) + "?departureDate=" + encodeURIComponent(depart) + "&cabin=economy&adults=1";
+    var asUrl  = "https://www.alaskaair.com/booking/flights?A=1&C=0&D=0&O=" + encodeURIComponent(from) + "&D2=" + encodeURIComponent(to) + "&OD=" + encodeURIComponent(depart) + "&OT=oneway&BC=Y&RT=false";
+    var f9Url  = "https://www.flyfrontier.com/book/plan-your-trip/?departureCity=" + encodeURIComponent(from) + "&arrivalCity=" + encodeURIComponent(to) + "&departureDate=" + encodeURIComponent(depart) + "&numberOfAdults=1&trip=ONE_WAY";
+
+    var cards =
+        "<span style=\"display:inline-flex;align-items:center;gap:5px;padding:5px 10px;font-size:12px;font-weight:700;color:#999;\">"
+            + ""
+        + "</span>"
+        + nmDirectChip("UA","United Airlines",uaUrl,"")
+        + nmDirectChip("DL","Delta Air Lines",dlUrl,"")
+        + nmDirectChip("WN","Southwest Airlines",swUrl,"");
+
+    var section = document.createElement("div");
+    section.id = "nm-tp-section";
+    section.style.cssText = "margin:0 0 14px 0;padding:0;width:100%;";
+    section.innerHTML = "<div style=\"font-size:10px;color:#bbb;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px 0;padding:0;\">Also search on</div>"
+        + "<div style=\"overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0;padding:0;\">"
+        + "<div style=\"display:flex;flex-wrap:nowrap;gap:6px;align-items:center;width:max-content;\">" + cards + "</div>"
+        + "</div>";
+    list.insertBefore(section, list.firstChild);
+}
+
 function nmSortFlights(by, btn) {
     document.querySelectorAll('.nm-sort-btn').forEach(function(b){b.classList.remove('active');});
     if (btn) btn.classList.add('active');
@@ -1800,7 +1938,8 @@ function nmSortFlights(by, btn) {
         });
     }
     var list = document.getElementById('nm-fl-list');
-    if (list) { list.innerHTML = ''; s.forEach(function(o){ list.innerHTML += nmFlightCard(o); }); }
+    if (list) { nmRenderGrouped(s, list); }
+    if (window._nmCtx) nmRenderTPFlights(window._nmCtx.from, window._nmCtx.to, window._nmCtx.depart);
 }
 
 // Event delegation for SELECT buttons — avoids all quote-escaping issues in onclick attrs
@@ -1817,24 +1956,49 @@ document.addEventListener('click', function(e) {
 // HOTELS
 // ════════════════════════════════════════════════════
 function nmSearchHotels() {
-    var dest = document.querySelectorAll(".nm-search-input")[2].value.trim();
-    var cin  = document.getElementById('nm-h-in').value;
-    var cout = document.getElementById('nm-h-out').value;
-    var adl  = document.getElementById('nm-h-adults').value;
-    var rm   = document.getElementById('nm-h-rooms').value;
+    var ap = document.getElementById('nm-ap-section'); if (ap) ap.style.display = 'none';
+    var panel = document.getElementById('panel-hotels');
+    var destEl = panel ? (panel.querySelector('.nm-search-input') || document.getElementById('nm-h-dest')) : document.getElementById('nm-h-dest');
+    var dest = destEl ? destEl.value.trim() : '';
+    var cin  = document.getElementById('nm-h-in') ? document.getElementById('nm-h-in').value : '';
+    var cout = document.getElementById('nm-h-out') ? document.getElementById('nm-h-out').value : '';
+    var adl  = document.getElementById('nm-h-adults') ? document.getElementById('nm-h-adults').value : '2';
+    var rm   = document.getElementById('nm-h-rooms') ? document.getElementById('nm-h-rooms').value : '1';
     if (!dest||!cin||!cout) { alert('Please fill in destination, check-in and check-out dates.'); return; }
+
+    var hBtn = document.getElementById('nm-h-search-btn');
+    if (hBtn) {
+        var rip = document.createElement('span');
+        rip.className = 'nm-ripple';
+        rip.style.top  = (hBtn.offsetHeight/2)+'px';
+        rip.style.left = (hBtn.offsetWidth/2)+'px';
+        hBtn.appendChild(rip);
+        setTimeout(function(){ rip.remove(); }, 700);
+        hBtn.innerHTML = '<i class="fas fa-hotel fa-spin" style="font-size:13px;"></i>&nbsp; Searching...';
+        hBtn.classList.add('nm-btn-loading');
+        hBtn.disabled = true;
+    }
+
     nmLoading('Searching hotels in '+dest+'&hellip;');
+
+    var res = document.getElementById('nm-results');
+    if (res) setTimeout(function(){ res.scrollIntoView({behavior:'smooth', block:'start'}); }, 120);
+
     var qs = 'city='+encodeURIComponent(dest)+'&checkin='+encodeURIComponent(cin)+'&checkout='+encodeURIComponent(cout)+'&adults='+adl+'&rooms='+rm;
     fetch('/api/home/hotels?'+qs, {headers:{'X-Requested-With':'XMLHttpRequest'}})
     .then(function(r){return r.json();})
     .then(function(data){
+        if (hBtn) { hBtn.innerHTML='<i class="fas fa-search"></i> Search Hotels'; hBtn.classList.remove('nm-btn-loading'); hBtn.disabled=false; }
         if(data.error && !data.hotels) { nmError(data.error+' &nbsp;<a href="/hotels" style="color:#c9a84c;">Try our hotels page</a>'); return; }
-        nmRenderHotels(data.hotels||[], dest, cin, cout);
+        nmRenderHotels(data.hotels||[], dest, cin, cout, adl, rm);
     })
-    .catch(function(){ nmError('Hotel search failed. <a href="/hotels" style="color:#c9a84c;">Try our hotels page</a>.'); });
+    .catch(function(){
+        if (hBtn) { hBtn.innerHTML='<i class="fas fa-search"></i> Search Hotels'; hBtn.classList.remove('nm-btn-loading'); hBtn.disabled=false; }
+        nmError('Hotel search failed. <a href="/hotels" style="color:#c9a84c;">Try our hotels page</a>.');
+    });
 }
 
-function nmRenderHotels(hotels, dest, cin, cout) {
+function nmRenderHotels(hotels, dest, cin, cout, adl) {
     if (!hotels||hotels.length===0) {
         nmNone('No hotels found in '+dest+'.<br><small style="color:#999">Try different dates or visit our <a href="/hotels" style="color:#c9a84c;">hotels page</a>.</small>');
         return;
@@ -1850,8 +2014,7 @@ function nmRenderHotels(hotels, dest, cin, cout) {
         var rate  = h.minRate||h.total_amount||0;
         var pStr  = rate ? '$'+parseFloat(rate).toFixed(0)+'/night' : 'Check price';
         var imgs  = h.images||[];
-        var img   = imgs.length ? imgs[0].path||imgs[0].url||'' : '';
-        if(img && img.indexOf('http')===-1) img = 'https://photos.hotelbeds.com/giata/bigger/'+img;
+        var img   = h.image || h.thumbnail || (imgs.length ? imgs[0].path||imgs[0].url||'' : '');
         var addr  = (h.address&&h.address.content)||h.address||'';
         html += '<div class="nm-hc">'
             +(img?'<img src="'+img+'" class="nm-hc-img" alt="'+name+'" loading="lazy" onerror="this.outerHTML=\'<div class=nm-hc-ph>🏨</div>\'">'
@@ -1861,7 +2024,7 @@ function nmRenderHotels(hotels, dest, cin, cout) {
             +(starS?'<div class="nm-hc-stars">'+starS+'</div>':'')
             +(addr?'<div class="nm-hc-meta"><i class="fas fa-map-marker-alt"></i> '+addr+'</div>':'')
             +'<div class="nm-hc-price">'+pStr+'</div>'
-            +'<a href="<?php echo e(url("/hotels")); ?>" class="nm-hc-btn">View &amp; Book</a>'
+            +'<a href="/hotels/detail/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>'
             +'</div></div>';
     });
     html += '</div>';
@@ -1917,7 +2080,7 @@ function nmRenderEvents(events, type, city) {
         +'<span style="font-size:13px;color:#888;">'+events.length+' found &nbsp;<a href="'+pageUrl+'" style="font-size:12px;color:#c9a84c;">(view all)</a></span></div>'
         +'<div class="nm-grid">';
     events.slice(0,12).forEach(function(ev){
-        var img  = ev.images&&ev.images[0] ? ev.images[0].url : '';
+        var img  = ev.image || (ev.images&&ev.images[0] ? ev.images[0].url : '');
         var ven  = ev._embedded&&ev._embedded.venues ? ev._embedded.venues[0] : {};
         var vn   = ven.name||'';
         var vcity= (ven.city?ven.city.name:'')+(ven.state?', '+ven.state.stateCode:'');
@@ -2092,6 +2255,52 @@ function nmSubmitBooking(e) {
         btn.disabled=false; btn.innerHTML='<i class="fas fa-lock me-2"></i>Retry Payment';
     });
 }
+
+
+function nmSearchCars() {
+    var pickup = document.getElementById('nm-car-pickup').value.trim();
+    var fromDate = document.getElementById('nm-car-from').value;
+    var toDate = document.getElementById('nm-car-to').value;
+    var age = document.getElementById('nm-car-age').value;
+    if (!pickup) { alert('Please enter a pick-up location.'); return; }
+    if (!fromDate) { alert('Please select a pick-up date.'); return; }
+    if (!toDate) { alert('Please select a return date.'); return; }
+    var rentcarsUrl = 'https://www.rentcars.com/en/results/?'
+        + 'pickUpPlace=' + encodeURIComponent(pickup)
+        + '&pickUpDate=' + encodeURIComponent(fromDate + 'T12:00:00')
+        + '&dropOffDate=' + encodeURIComponent(toDate + 'T12:00:00')
+        + '&driverAge=' + age
+        + '&currency=USD';
+    var affUrl = 'https://www.awin1.com/cread.php?awinmid=18808&awinaffid=2836196&ued=' + encodeURIComponent(rentcarsUrl);
+    window.open(affUrl, '_blank');
+}
+
+// ── Typewriter effect ───────────────────────────────
+(function() {
+  var el = document.getElementById('nm-type-word');
+  if (!el) return;
+  var words = ['Your Journey.', 'Your Trip.', 'Your Stay.', 'Your Music.', 'Your Sports.'];
+  var cur = document.createElement('span');
+  cur.id = 'nm-cursor'; cur.textContent = '|';
+  el.insertAdjacentElement('afterend', cur);
+  var idx = 0, pos = 0, deleting = false;
+  var word = words[0];
+  el.textContent = '';
+  function tick() {
+    if (!deleting) {
+      pos++;
+      el.textContent = word.slice(0, pos);
+      if (pos === word.length) { deleting = true; setTimeout(tick, 1600); return; }
+      setTimeout(tick, 85);
+    } else {
+      pos--;
+      el.textContent = word.slice(0, pos);
+      if (pos === 0) { deleting = false; idx = (idx + 1) % words.length; word = words[idx]; setTimeout(tick, 350); return; }
+      setTimeout(tick, 45);
+    }
+  }
+  setTimeout(tick, 600);
+})();
 </script>
 <?php $__env->stopPush(); ?>
  <?php echo $__env->renderComponent(); ?>

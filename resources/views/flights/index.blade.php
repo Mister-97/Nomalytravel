@@ -54,6 +54,14 @@
 .nm-fc-price-btn:hover { background: #2a2a2a; }
 .nm-fc-price-val { font-size: 15px; font-weight: 800; display: block; line-height: 1.2; }
 .nm-fc-price-lbl { font-size: 9px; color: #c9a84c; opacity: 0.8; display: block; }
+
+.fl-show-more-btn {
+    display:block;width:100%;padding:10px;margin:4px 0 12px;
+    background:#f5f7fa;border:1.5px dashed #ccc;border-radius:10px;
+    color:#555;font-size:13px;font-weight:600;cursor:pointer;text-align:center;
+    transition:background .15s;
+}
+.fl-show-more-btn:hover { background:#eef0f5; border-color:#bbb; color:#0a1628; }
 @media (max-width: 480px) {
     .nm-fc { gap: 7px; padding: 10px 10px; }
     .nm-fc-aln { display:inline-flex; align-items:center; font-size:12px; color:#444; font-weight:500; }
@@ -61,6 +69,13 @@
     .nm-fc-time { font-size: 14px; }
     .nm-fc-price-val { font-size: 14px; }
 }
+.nm-airline-filter{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0 4px;border-top:1px solid #eee;margin-top:8px;}
+.nm-af-pill{background:#f4f4f4;border:1.5px solid #ddd;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;color:#555;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.nm-af-pill:hover{border-color:#c9a84c;color:#c9a84c;}
+.nm-af-pill.active{background:#0a1628;border-color:#0a1628;color:#c9a84c;}
+.nm-af-count{font-size:10px;opacity:.7;margin-left:2px;}
+.nm-al-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1.5px solid #ddd;border-radius:20px;background:#fff;text-decoration:none;cursor:pointer;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.nm-al-chip:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);transform:translateY(-1px);}
 </style>
 @endpush
 
@@ -80,7 +95,6 @@
               <small style="font-size:10px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">We Fly With:</small>
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/AA.svg" alt="American Airlines" title="American Airlines">
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/F9.svg" alt="Frontier" title="Frontier">
-              <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/NK.svg" alt="Spirit" title="Spirit">
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/B6.svg" alt="JetBlue" title="JetBlue">
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/AS.svg" alt="Alaska" title="Alaska Airlines">
               <img src="https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/UA.svg" alt="United" title="United Airlines" style="opacity:.4;filter:grayscale(1)">
@@ -474,7 +488,7 @@ function flShowResults(html, animate){
     outer.style.display='';
     requestAnimationFrame(function(){ requestAnimationFrame(function(){
         inner.classList.add('nm-visible');
-        if(animate!==false) outer.scrollIntoView({behavior:'smooth',block:'start'});
+        if(animate!==false){setTimeout(function(){var top=outer.getBoundingClientRect().top+window.pageYOffset-80;window.scrollTo({top:top,behavior:'smooth'});},120);}
     });});
 }
 function flLoading(msg){
@@ -491,8 +505,8 @@ function flParseDur(iso){ if(!iso) return 0; var m=iso.match(/PT(?:(\d+)H)?(?:(\
 function flFmtTime(iso){ if(!iso) return ''; try{return new Date(iso).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});}catch(e){return '';} }
 function flFmtDate(s){ try{var d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}catch(e){return s;} }
 
-var FL_US_PRIORITY={AA:1,F9:2,NK:3,B6:4,AS:5,UA:6,DL:7,WN:8,G4:9,SY:10};
-var FL_HAS_LOGO={AA:1,AS:1,B6:1,DL:1,F9:1,G4:1,HA:1,NK:1,SY:1,UA:1,WN:1,BA:1,LH:1,AF:1,KL:1,IB:1,EK:1,QR:1,SQ:1,AC:1,QF:1,LA:1,AM:1};
+var FL_US_PRIORITY={AA:1,F9:2,B6:4,AS:5,UA:6,DL:7,WN:8,G4:9,SY:10};
+var FL_HAS_LOGO={AA:1,AS:1,B6:1,DL:1,F9:1,G4:1,HA:1,SY:1,UA:1,WN:1,BA:1,LH:1,AF:1,KL:1,IB:1,EK:1,QR:1,SQ:1,AC:1,QF:1,LA:1,AM:1};
 
 function flSortPriority(a,b){
     var ia=(a.owner&&a.owner.iata_code)?a.owner.iata_code.toUpperCase():'';
@@ -503,6 +517,8 @@ function flSortPriority(a,b){
 }
 
 // ── Main Search ──
+var _flSearchTimer=null;
+function flDebouncedSearch(d){clearTimeout(_flSearchTimer);_flSearchTimer=setTimeout(function(){flSearch(d);},350);}
 function flSearch(overrideDate){
     var fromEl=document.getElementById('fl-from'), toEl=document.getElementById('fl-to');
     var fromCode=document.getElementById('fl-from-code'), toCode=document.getElementById('fl-to-code');
@@ -538,18 +554,23 @@ function flSearch(overrideDate){
     qs+='&youth='+encodeURIComponent(youth)+'&infants='+encodeURIComponent(infants);
     if(trip==='twoway'&&ret) qs+='&return_date='+encodeURIComponent(ret);
 
-    fetch('/api/home/flights?'+qs,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+    if(window._flAbortCtrl) window._flAbortCtrl.abort();
+    window._flAbortCtrl = new AbortController();
+    var signal = window._flAbortCtrl.signal;
+    fetch('/api/home/flights?'+qs,{headers:{'X-Requested-With':'XMLHttpRequest'},signal:signal})
     .then(function(r){return r.json();})
     .then(function(data){
         if(btn){btn.innerHTML='<i class="fas fa-search"></i> Search';btn.disabled=false;}
         if(data&&data.error){flError(data.error);return;}
         var offers=Array.isArray(data)?data:(data.offers||data.data||[]);
         window._flOffers=offers;
+        window._tpOffers=data.tp_offers||[];
         flRenderFlights(offers,from,to,depart);
+        flRenderTPFlights(window._tpOffers,from,to,depart);
     })
     .catch(function(e){
         if(btn){btn.innerHTML='<i class="fas fa-search"></i> Search';btn.disabled=false;}
-        flError('Search error: '+(e.message||'network error'));
+        if(e.name==='AbortError') return; flError('Search error: '+(e.message||'network error'));
     });
 }
 
@@ -564,7 +585,7 @@ function flBuildPriceCalendar(from,to,depart){
         var dayName=d.toLocaleDateString('en-US',{weekday:'short'});
         var dateDisp=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
         var isSel=(ds===depart);
-        pills+='<div class="nm-date-pill'+(isSel?' nm-dp-sel':'')+'" id="fldp-'+ds+'" onclick="flSearch(\''+ds+'\')">'
+        pills+='<div class="nm-date-pill'+(isSel?' nm-dp-sel':'')+'" id="fldp-'+ds+'" onclick="flDebouncedSearch(\''+ds+'\')">'
             +'<div class="nm-dp-day">'+dayName+'</div>'
             +'<div class="nm-dp-dt">'+dateDisp+'</div>'
             +'<div class="nm-dp-price loading" id="fldpp-'+ds+'">•••</div></div>';
@@ -603,9 +624,13 @@ function flRenderFlights(offers,from,to,depart){
         return;
     }
     var sorted=offers.slice().sort(function(a,b){return parseFloat(a.total_amount||9999)-parseFloat(b.total_amount||9999);});
-    var airlines={};
-    sorted.forEach(function(o){if(o.owner&&o.owner.name)airlines[o.owner.name]=1;});
-    var alCount=Object.keys(airlines).length;
+    var airlineMap={};
+    sorted.forEach(function(o){
+        var name=(o.owner&&o.owner.name)||'Unknown';
+        airlineMap[name]=(airlineMap[name]||0)+1;
+    });
+    var alCount=Object.keys(airlineMap).length;
+    window._flActiveAirline=null;
 
     var html='<div class="nm-results-hdr">'
         +'<h4 class="nm-results-title"><span style="color:#c9a84c;">'+from+'</span>'
@@ -620,13 +645,32 @@ function flRenderFlights(offers,from,to,depart){
         +'<button type="button" class="nm-sort-btn" onclick="flSortFlights(\'stops\',this)">Nonstop first</button>'
         +'</div></div></div>';
 
+    // Airline filter pills
+    var pillsHtml='<div class="nm-airline-filter" id="nm-airline-filter"><button type="button" class="nm-af-pill active" onclick="flFilterAirline(null,this)">All</button>';
+    Object.keys(airlineMap).sort().forEach(function(n){
+        pillsHtml+='<button type="button" class="nm-af-pill" onclick="flFilterAirline('+JSON.stringify(n)+',this)">'+n+' <span class="nm-af-count">'+airlineMap[n]+'</span></button>';
+    });
+    pillsHtml+='</div>';
+    html+=pillsHtml;
+
     html+=flBuildPriceCalendar(from,to,depart);
-    html+='<div id="fl-list">';
+    html+='<div id="fl-list"></div>';
     if(!window._flCardData) window._flCardData={};
-    sorted.forEach(function(o){html+=flFlightCard(o);});
-    html+='</div>';
     flShowResults(html);
+    var _grpList=document.getElementById('fl-list');
+    if(_grpList) flRenderGrouped(sorted,_grpList);
     setTimeout(function(){flFetchNearbyPrices(from,to,depart);},600);
+}
+
+function flFilterAirline(name,btn){
+    window._flActiveAirline=name;
+    document.querySelectorAll('.nm-af-pill').forEach(function(b){b.classList.remove('active');});
+    if(btn) btn.classList.add('active');
+    var src=window._flOffers||[];
+    var filtered=name?src.filter(function(o){return ((o.owner&&o.owner.name)||'Unknown')===name;}):src;
+    var list=document.getElementById('fl-list');
+    if(list){ flRenderGrouped(filtered,list); }
+    if(!name&&window._tpOffers!==undefined&&window._flCtx) flRenderTPFlights(window._tpOffers,window._flCtx.from,window._flCtx.to,window._flCtx.depart);
 }
 
 function flFlightCard(offer){
@@ -636,7 +680,7 @@ function flFlightCard(offer){
             const oc=seg.operating_carrier||{};
             const owner=offer.owner||{};
             const iata=((oc.iata_code||owner.iata_code||'')).toUpperCase();
-            const airlineNames={'F9':'Frontier','NK':'Spirit','AA':'American','UA':'United','DL':'Delta','WN':'Southwest','B6':'JetBlue','AS':'Alaska','G4':'Allegiant','SY':'Sun Country','HA':'Hawaiian','MX':'Breeze','VX':'Virgin America'};
+            const airlineNames={'F9':'Frontier','AA':'American','UA':'United','DL':'Delta','WN':'Southwest','B6':'JetBlue','AS':'Alaska','G4':'Allegiant','SY':'Sun Country','HA':'Hawaiian','MX':'Breeze','VX':'Virgin America'};
             const ownerIata=(offer.owner&&offer.owner.iata_code)||'';
             const ownerName=(offer.owner&&offer.owner.name)||airlineNames[ownerIata]||ownerIata||'';
             const airlineName=oc.name||ownerName||airlineNames[iata]||iata||'Unknown';
@@ -683,6 +727,42 @@ function flFlightCard(offer){
                 <div class="fl-booking-container" id="bkc-${uid}" style="display:none;padding:10px 0 0;width:100%"></div>
             </div>`;
         }
+
+var FL_PER_AIRLINE=5;
+
+function flRenderGrouped(offers,list){
+    var groups={},order=[];
+    offers.forEach(function(o){
+        var n=(o.owner&&o.owner.name)||'Unknown';
+        if(!groups[n]){groups[n]=[];order.push(n);}
+        groups[n].push(o);
+    });
+    var html='';
+    order.forEach(function(name){
+        var flights=groups[name];
+        var show=flights.slice(0,FL_PER_AIRLINE);
+        var rest=flights.slice(FL_PER_AIRLINE);
+        html+='<div class="fl-airline-group">';
+        show.forEach(function(o){html+=flFlightCard(o);});
+        if(rest.length>0){
+            var hiddenHtml='';
+            rest.forEach(function(o){hiddenHtml+=flFlightCard(o);});
+            html+='<div class="fl-more-flights" style="display:none;">'+hiddenHtml+'</div>';
+            html+='<button type="button" class="fl-show-more-btn" onclick="flShowMore(this)">'
+                +'<i class="fas fa-chevron-down me-1"></i>Show '+rest.length+' more '+flEsc(name)+' flights'
+                +'</button>';
+        }
+        html+='</div>';
+    });
+    list.innerHTML=html;
+}
+
+function flShowMore(btn){
+    var hidden=btn.previousElementSibling;
+    hidden.style.display='';
+    btn.style.display='none';
+}
+
 function flSortFlights(by,btn){
     document.querySelectorAll('.nm-sort-btn').forEach(function(b){b.classList.remove('active');});
     if(btn) btn.classList.add('active');
@@ -692,7 +772,8 @@ function flSortFlights(by,btn){
     else if(by==='dur') s.sort(function(a,b){return flParseDur((a.slices[0]||{}).duration||'')-flParseDur((b.slices[0]||{}).duration||'');});
     else if(by==='stops') s.sort(function(a,b){var sa=a.slices&&a.slices[0]&&a.slices[0].segments?a.slices[0].segments.length-1:9,sb=b.slices&&b.slices[0]&&b.slices[0].segments?b.slices[0].segments.length-1:9;return sa!==sb?sa-sb:parseFloat(a.total_amount)-parseFloat(b.total_amount);});
     var list=document.getElementById('fl-list');
-    if(list){list.innerHTML='';s.forEach(function(o){list.innerHTML+=flFlightCard(o);});}
+    if(list){ flRenderGrouped(s,list); }
+    if(window._tpOffers!==undefined&&window._flCtx) flRenderTPFlights(window._tpOffers,window._flCtx.from,window._flCtx.to,window._flCtx.depart);
 }
 
 // ── Click delegation for SELECT buttons ──
@@ -711,7 +792,7 @@ var _flStripe=null, _flStripeCards={};
 function _flInitStripe(cardEl, onReady){
     if(!_flStripe){
         if(typeof Stripe!=='undefined'){
-            _flStripe=Stripe('{{ env("STRIPE_KEY") }}');
+            _flStripe=Stripe('{{ config('services.stripe.key') }}');
             var card=_flStripe.elements().create('card',{style:{base:{fontSize:'15px',color:'#0a1628','::placeholder':{color:'#bbb'},fontFamily:'inherit'}}});
             card.mount(cardEl);
             _flStripeCards[cardEl.id||Math.random()]=card;
@@ -719,7 +800,7 @@ function _flInitStripe(cardEl, onReady){
         } else {
             var s=document.createElement('script'); s.src='https://js.stripe.com/v3/';
             s.onload=function(){
-                _flStripe=Stripe('{{ env("STRIPE_KEY") }}');
+                _flStripe=Stripe('{{ config('services.stripe.key') }}');
                 var card=_flStripe.elements().create('card',{style:{base:{fontSize:'15px',color:'#0a1628','::placeholder':{color:'#bbb'},fontFamily:'inherit'}}});
                 card.mount(cardEl);
                 _flStripeCards[cardEl.id||Math.random()]=card;
@@ -741,7 +822,10 @@ function flLoadSeatMap(offerId, seatMapEl, seatInfoEl, onSeatPicked){
     .then(function(r){return r.json();})
     .then(function(data){
         if(data.error||!data.cabins||!data.cabins.length){
-            seatMapEl.innerHTML='<div class="nm-seat-loading" style="color:#c9a84c;"><i class="fas fa-info-circle me-2"></i>Seat map not available for this flight</div>';
+            var sec=seatMapEl.closest('.nm-seat-section');
+            if(sec) sec.style.display='none';
+            var form=seatMapEl.closest('.nm-inline-body').querySelector('.fl-book-form');
+            if(form){form.style.display='block';form.scrollIntoView({behavior:'smooth',block:'nearest'});}
             return;
         }
         flRenderSeatMap(data.cabins, seatMapEl, seatInfoEl, onSeatPicked);
@@ -909,6 +993,110 @@ function flShowBookingForm(clone, data, uid, getSeat){
         })
         .catch(function(err){if(err==='pi'||err==='card') return; msgEl.innerHTML='<div class="nm-alert-err mb-2">Payment error. Please try again.</div>';payBtn.disabled=false;payBtn.innerHTML='<i class="fas fa-lock me-2"></i>Retry';});
     });
+}
+
+
+// Travelpayouts: United, Delta, Southwest
+function flRenderTPFlights(tpOffers,from,to,depart){
+    var list=document.getElementById("fl-list");
+    if(!list) return;
+    var prev=document.getElementById("tp-section");
+    if(prev) prev.remove();
+    var knownAirlines={
+        "UA":"United Airlines","DL":"Delta Air Lines","AA":"American Airlines",
+        "WN":"Southwest Airlines","B6":"JetBlue","AS":"Alaska Airlines",
+        "F9":"Frontier","G4":"Allegiant","NK":"Spirit","HA":"Hawaiian"
+    };
+    var highlight={"UA":1,"DL":1};
+
+    var cards="";
+    (tpOffers||[]).forEach(function(f){
+        var code=(f.airline||"").toUpperCase();
+        var name=knownAirlines[code]||code;
+        var dep=f.departure_at?f.departure_at.substring(11,16):"--:--";
+        var durMins=f.duration_to||f.duration||0;
+        var dur=durMins?(Math.floor(durMins/60)+"h "+(durMins%60)+"m"):"";
+        var stops=f.transfers===0?"Nonstop":f.transfers+" stop"+(f.transfers>1?"s":"");
+        var price="$"+Math.round(f.price||0);
+        var link=f.booking_link||"#";
+        var destCode=f.destination_airport||f.destination||to;
+        var isHL=highlight[code]?1:0;
+        var borderColor=isHL?(code==="UA"?"#003580":"#c01933"):"#aaa";
+        var btnBg=isHL?(code==="UA"?"#003580":"#c01933"):"#1a1a1a";
+        cards+="<a href=\""+link+"\" target=\"_blank\" rel=\"noopener\" class=\"nm-fc "+(f.transfers===0?"nonstop":"with-stops")+"\" style=\"text-decoration:none;border-left-color:"+borderColor+";\">"
+            +"<img class=\"nm-fc-logo\" src=\"https://pics.avs.io/40/40/"+code+".png\" onerror=\"this.style.display=&apos;none&apos;\" alt=\""+code+"\">"
+            +"<div class=\"nm-fc-dep\"><span class=\"nm-fc-time\">"+dep+"</span><span class=\"nm-fc-code\">"+f.origin_airport+"</span></div>"
+            +"<div class=\"nm-fc-mid\"><div class=\"nm-fc-mid-line\"><span class=\"nm-fc-mid-seg\"></span><span class=\"nm-fc-mid-dot\"></span><span class=\"nm-fc-mid-seg\"></span></div>"
+            +"<span class=\"nm-fc-mid-label\">"+dur+(dur&&stops?" · ":"")+stops+"</span></div>"
+            +"<div class=\"nm-fc-arr\"><span class=\"nm-fc-time\">--</span><span class=\"nm-fc-code\">"+destCode+"</span></div>"
+            +"<span class=\"nm-fc-aln\">"+name+"</span>"
+            +"<div class=\"nm-fc-price-btn\" style=\"background:"+btnBg+";\">"
+            +"<span class=\"nm-fc-price-val\">"+price+"</span>"
+            +"<span class=\"nm-fc-price-lbl\">Book →</span>"
+            +"</div>"
+            +"</a>";
+    });
+
+    // Check which airlines appeared in TP results; add direct-search cards for missing ones
+    var tpCodes={};
+    (tpOffers||[]).forEach(function(f){ tpCodes[(f.airline||"").toUpperCase()]=1; });
+
+    function nmDirectCard(code,name,url,color){
+        var short=name.replace(" Airlines","").replace(" Air Lines","").replace(" Airways","");
+        return "<a href=\"" +url+ "\" target=\"_blank\" rel=\"noopener\" class=\"nm-al-chip\" style=\"border-color:"+color+";\">"
+            +"<img src=\"https://pics.avs.io/32/32/"+code+".png\" onerror=\"this.style.display=&apos;none&apos;\" alt=\""+code+"\" style=\"width:24px;height:24px;object-fit:contain;flex-shrink:0;\">"
+            +"<span style=\"font-size:12px;font-weight:700;color:#0a1628;\">"+short+"</span>"
+            +"<span style=\"font-size:11px;font-weight:700;color:#fff;background:"+color+";padding:3px 8px;border-radius:10px;white-space:nowrap;\">Search →</span>"
+            +"</a>";
+    }
+
+    // United — always show direct chip
+    var uaUrl="https://www.united.com/en/us/book-flight/united-one-way-flight?from="+encodeURIComponent(from)+"&to="+encodeURIComponent(to)+"&departDate="+encodeURIComponent(depart)+"&paxCount=1&cabinType=economy";
+    cards+=nmDirectCard("UA","United Airlines",uaUrl,"#003580");
+
+    // Delta — always show direct chip
+    var dlUrl="https://www.delta.com/us/en/flight-search/book-a-flight?tripType=ONE_WAY&departureDate="+encodeURIComponent(depart)+"&originAirportCode="+encodeURIComponent(from)+"&destinationAirportCode="+encodeURIComponent(to)+"&paxCount=1&cabinType=MAIN_CABIN";
+    cards+=nmDirectCard("DL","Delta Air Lines",dlUrl,"#c01933");
+
+    // Aviasales — shows ALL airlines including UA, DL with real prices
+    var avsDate=depart.replace(/-/g,"");
+    var avsUrl="https://www.aviasales.com/search/"+encodeURIComponent(from)+avsDate.substring(4,8)+encodeURIComponent(to)+"1?marker=441262";
+    cards="<a href=\"" +avsUrl+ "\" target=\"_blank\" rel=\"noopener\" class=\"nm-al-chip\" style=\"border-color:#ff6d00;background:#fff8f4;\">"
+        +"<img src=\"https://pics.avs.io/32/32/AS.png\" onerror=\"this.style.display=&apos;none&apos;\" style=\"width:20px;height:20px;\">"
+        +"<span style=\"font-size:12px;font-weight:700;color:#ff6d00;\">All Airlines + United & Delta</span>"
+        +"<span style=\"font-size:11px;font-weight:700;color:#fff;background:#ff6d00;padding:3px 10px;border-radius:10px;\">Compare All →</span>"
+        +"</a>"+cards;
+    // Southwest — always direct (not on GDS)
+    var swUrl="https://www.southwest.com/air/booking/select.html?adultPassengersCount=1"
+        +"&departureDate="+encodeURIComponent(depart)
+        +"&destinationAirportCode="+encodeURIComponent(to)
+        +"&fareType=USD&int=HOMEQBOMFT"
+        +"&originationAirportCode="+encodeURIComponent(from)
+        +"&passengerType=ADULT&returnDate=&tripType=oneway&departureTimeOfDay=ALL_DAY&reset=true&returnAirportCode=";
+    cards+="<a href=\"" +swUrl+ "\" target=\"_blank\" rel=\"noopener\" class=\"nm-al-chip\" style=\"border-color:#304CB2;background:#f0f4ff;\">"
+        +"<img src=\"https://pics.avs.io/32/32/WN.png\" onerror=\"this.style.display=&apos;none&apos;\" style=\"width:20px;height:20px;\">"
+        +"<span style=\"font-size:12px;font-weight:700;color:#304CB2;\">Southwest</span>"
+        +"<span style=\"font-size:11px;font-weight:700;color:#fff;background:#304CB2;padding:3px 10px;border-radius:10px;\">Search \xe2\x86\x92</span>"
+        +"</a>";
+
+    // JetBlue — always direct (not in Duffel NDC)
+    var b6Url="https://www.jetblue.com/flights/"+encodeURIComponent(from)+"-"+encodeURIComponent(to)+"?departureDate="+encodeURIComponent(depart)+"&cabin=economy&adults=1";
+    cards+=nmDirectCard("B6","JetBlue",b6Url,"#003876");
+
+    // Alaska — always direct (not in Duffel NDC)
+    var asUrl="https://www.alaskaair.com/booking/flights?A=1&C=0&D=0&O="+encodeURIComponent(from)+"&D2="+encodeURIComponent(to)+"&OD="+encodeURIComponent(depart)+"&OT=oneway&BC=Y&RT=false";
+    cards+=nmDirectCard("AS","Alaska Airlines",asUrl,"#00467F");
+
+    // Frontier — always direct (not in Duffel NDC)
+    var f9Url="https://www.flyfrontier.com/book/plan-your-trip/?departureCity="+encodeURIComponent(from)+"&arrivalCity="+encodeURIComponent(to)+"&departureDate="+encodeURIComponent(depart)+"&numberOfAdults=1&trip=ONE_WAY";
+    cards+=nmDirectCard("F9","Frontier Airlines",f9Url,"#00A651");
+
+    var section=document.createElement("div");
+    section.id="tp-section";
+    section.style.cssText="margin-bottom:14px;";
+    section.innerHTML="<div style=\"font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#999;margin-bottom:8px;\">Also search these airlines</div>"
+        +"<div style=\"display:flex;flex-wrap:wrap;gap:8px;align-items:center;\">" + cards + "</div>";
+    list.insertBefore(section, list.firstChild);
 }
 
 function flCloseBooking(el){

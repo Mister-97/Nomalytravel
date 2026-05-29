@@ -21,9 +21,9 @@
 .nm-hotel-location { font-size:12px; color:#888; margin-bottom:10px; }
 .nm-hotel-location i { color:#c9a84c; }
 .nm-hotel-stars { color:#c9a84c; font-size:13px; margin-bottom:8px; }
-.nm-hotel-price { font-size:22px; font-weight:900; color:#0a1628; margin-top:auto; }
+.nm-hotel-price { font-size:22px; font-weight:900; color:#0a1628; margin-bottom:12px; }
 .nm-hotel-price span { font-size:11px; color:#999; font-weight:400; }
-.nm-hotel-btn { display:block; margin-top:10px; background:#0a1628; color:#c9a84c; border-radius:9px; padding:10px 0; text-align:center; font-size:13px; font-weight:700; text-decoration:none; transition:all .2s; border:2px solid #c9a84c; }
+.nm-hotel-btn { display:block; margin-top:auto; background:#0a1628; color:#c9a84c; border-radius:9px; padding:10px 0; text-align:center; font-size:13px; font-weight:700; text-decoration:none; transition:all .2s; border:2px solid #c9a84c; }
 .nm-hotel-btn:hover { background:#c9a84c; color:#0a1628; }
 </style>
 @endpush

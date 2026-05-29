@@ -275,8 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cardBody.insertBefore(alert, cardBody.firstChild);
     }
 
-    // Start resend timer on page load
-    startResendTimer();
+    // Don't auto-start timer — only start after user clicks Resend
 });
 </script>
 </x-app-layout>

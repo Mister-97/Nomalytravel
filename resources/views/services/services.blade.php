@@ -1,5 +1,11 @@
 <x-app-layout>
         <style>
+            @media (max-width: 767px) {
+                .service, .service-content, .service-title { text-align: center !important; }
+                .service p { text-align: center !important; }
+                .service .btn { display: inline-block; margin: 0 auto; }
+                .service-content > p:last-child { text-align: center !important; }
+            }
             .navbar-transparent {
     background-color: #2a2a2a !important;
     position: absolute;

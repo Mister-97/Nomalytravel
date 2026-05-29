@@ -1,36 +1,45 @@
-<x-guest-layout>
-    <x-authentication-card>
-        <x-slot name="logo">
-            <x-authentication-card-logo />
-        </x-slot>
+<x-app-layout>
+<div class="pageheader">
+    <div class="container"><h1>Reset Password</h1></div>
+</div>
+<div class="innerpagewrap">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="card shadow-sm p-4 p-lg-5">
+                    <h4 class="mb-1">Set a New Password</h4>
+                    <p class="text-muted small mb-4">Enter your new password below.</p>
+                    <hr class="mb-4">
 
-        <x-validation-errors class="mb-4" />
+                    <x-validation-errors class="mb-4" />
 
-        <form method="POST" action="{{ route('password.update') }}">
-            @csrf
+                    <form method="POST" action="{{ route('password.update') }}">
+                        @csrf
+                        <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-            <input type="hidden" name="token" value="{{ $request->route('token') }}">
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">Email</label>
+                            <input id="email" type="email" name="email" class="form-control"
+                                   value="{{ old('email', $request->email) }}" required autofocus autocomplete="username">
+                        </div>
 
-            <div class="block">
-                <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">New Password</label>
+                            <input id="password" type="password" name="password" class="form-control"
+                                   required autocomplete="new-password">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password_confirmation" class="form-label fw-semibold">Confirm Password</label>
+                            <input id="password_confirmation" type="password" name="password_confirmation"
+                                   class="form-control" required autocomplete="new-password">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Reset Password</button>
+                    </form>
+                </div>
             </div>
-
-            <div class="mt-4">
-                <x-label for="password" value="{{ __('Password') }}" />
-                <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            </div>
-
-            <div class="mt-4">
-                <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" />
-                <x-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <x-button>
-                    {{ __('Reset Password') }}
-                </x-button>
-            </div>
-        </form>
-    </x-authentication-card>
-</x-guest-layout>
+        </div>
+    </div>
+</div>
+</x-app-layout>

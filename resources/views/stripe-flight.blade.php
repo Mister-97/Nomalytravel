@@ -206,7 +206,7 @@
 
 <script type="text/javascript" src="https://js.stripe.com/v2/"></script> 
 <script type="text/javascript">
-Stripe.setPublishableKey('pk_test_qZrL4iEhRiW0xVy1X3HRDtnp');
+Stripe.setPublishableKey('{{ config("services.stripe.key") }}');
 var $form = $('#stripe-form');
 $form.submit(function (event) {
     $('#error_div').hide();

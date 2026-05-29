@@ -3,15 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Services\DuffelService;
+use App\Services\TravelpayoutsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DuffelController extends Controller
 {
     protected $duffelService;
+    protected $tpService;
 
-    public function __construct(DuffelService $duffelService)
+    public function __construct(DuffelService $duffelService, TravelpayoutsService $tpService)
     {
         $this->duffelService = $duffelService;
+        $this->tpService = $tpService;
     }
 
     public function getHotels(Request $request)
@@ -211,7 +215,10 @@ class DuffelController extends Controller
             $params['page'] = $request->get('page', 1);
             $params['return_date'] = $request->input('return_date'); // NEW
 
-            $result = $this->duffelService->getOfferRequests($params);
+            $cacheKey = 'duffel_search_' . md5(json_encode($params));
+            $result = Cache::remember($cacheKey, 300, function () use ($params) {
+                return $this->duffelService->getOfferRequests($params);
+            });
 
             if (isset($result['error'])) {
                 if ($request->ajax()) {
@@ -220,8 +227,25 @@ class DuffelController extends Controller
                 return back()->with('error', $result['error']);
             }
 
+            // Travelpayouts: append United + Delta results
+            $tpOffers = [];
+            $tpFrom = $request->input("slices.0.from") ?: $request->input("from");
+            $tpTo   = $request->input("slices.0.to")   ?: $request->input("to");
+            $tpDate = $request->input("slices.0.departure_date") ?: $request->input("travelling_date");
+            if ($tpFrom && $tpTo && $tpDate) {
+                $oneWay = $request->input("triptype", "oneway") !== "twoway";
+                $tpOffers = $this->tpService->searchFlights($tpFrom, $tpTo, $tpDate, $oneWay);
+            }
+
             if ($request->ajax()) {
-                return response()->json($result);
+                // Normalise $result: it may be a Collection or a plain array of offers
+                $offerArray = $result instanceof \Illuminate\Support\Collection
+                    ? $result->values()->toArray()
+                    : (isset($result['offers']) ? $result['offers'] : array_values((array) $result));
+                return response()->json([
+                    'offers'    => $offerArray,
+                    'tp_offers' => $tpOffers,
+                ]);
             }
 
             return view('flights.search', [

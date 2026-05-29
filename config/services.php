@@ -53,8 +53,8 @@ return [
     ],
 
     'stripe' => [
-        'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
+        'key'    => env('STRIPE_KEY', ''),
+        'secret' => env('STRIPE_SECRET', ''),
     ],
 
     'paypal' => [
@@ -83,6 +83,14 @@ return [
 
     'liteapi' => [
         'key' => env('LITEAPI_KEY'),
-    ],
+    ], 
+  'ticketsqueeze' => [
+'key' => env('TICKETSQUEEZE_API_KEY'),
+],
 
+
+    "travelpayouts" => [
+        "token"  => env("TRAVELPAYOUTS_TOKEN", ""),
+        "marker" => env("TRAVELPAYOUTS_MARKER", ""),
+    ],
 ];

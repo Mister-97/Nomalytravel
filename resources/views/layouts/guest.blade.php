@@ -55,7 +55,7 @@
 
 
         <!-- Google Map --> 
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMqMG_n4C0aAi3F8a82Q6s3hxDLrTXxe8&callback=initMap" async defer></script> 
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMqMG_n4C0aAi3F8a82Q6s3hxDLrTXxe8&callback=initMap&loading=async" async defer></script> 
         <script src="{{asset('js/gmap.js') }}"></script> 
 
         <!-- Custom --> 
