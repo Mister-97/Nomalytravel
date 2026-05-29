@@ -17,7 +17,7 @@ class CarRentalController extends Controller
         'sports'      => 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=480&q=80',      // blue Camaro
         'convertible' => 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=480&q=80',   // convertible
         'mustang'     => 'https://images.unsplash.com/photo-1547245324-d777c6f05e80?w=480&q=80',      // Mustang
-        'pickup'      => 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/2021_Ford_F-150_%28facelift%2C_silver%29%2C_front_8.28.21.jpg/640px-2021_Ford_F-150_%28facelift%2C_silver%29%2C_front_8.28.21.jpg',
+        'pickup'      => 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=480&q=80',
     ];
 
     private static $catalog = [

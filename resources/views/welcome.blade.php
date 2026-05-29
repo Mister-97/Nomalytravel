@@ -628,7 +628,6 @@ body { animation: nm-page-in .5s ease both; }
   .nm-fc-mid { flex:1; padding:0 4px; }
   .nm-drawer { max-width: 100%; }
   .nm-gf-panel { padding: 18px; }
-  #panel-cars > .row > div:first-child { flex: 0 0 100% !important; max-width: 100% !important; width: 100% !important; }
   .nm-results-hdr { flex-direction: column; align-items: flex-start; }
   .nm-trip-type { flex-wrap: wrap; }
 }
@@ -904,25 +903,25 @@ body { animation: nm-page-in .5s ease both; }
           {{-- ── CARS ── --}}
           <div id="panel-cars" class="nm-gf-panel d-none">
             <div class="row g-2">
-              <div class="col-12 col-md-4">
+              <div class="col-12">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-map-marker-alt"></i>Pick-up Location</label>
                   <input type="text" id="nm-car-pickup" autocomplete="off" placeholder="City or airport…">
                 </div>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-6">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-calendar"></i>Pick-up Date</label>
                   <input type="date" id="nm-car-from" min="{{ date('Y-m-d') }}">
                 </div>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-6">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-calendar-check"></i>Return Date</label>
                   <input type="date" id="nm-car-to" min="{{ date('Y-m-d') }}">
                 </div>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-6">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-user"></i>Driver Age</label>
                   <select id="nm-car-age">
@@ -932,7 +931,7 @@ body { animation: nm-page-in .5s ease both; }
                   </select>
                 </div>
               </div>
-              <div class="col-12 col-md-auto d-flex align-items-stretch">
+              <div class="col-12 d-flex align-items-stretch">
                 <button type="button" class="nm-gf-btn" onclick="nmSearchCars(this)">
                   <i class="fas fa-search"></i> Search Cars
                 </button>
@@ -1624,7 +1623,7 @@ function nmSearchFlights(overrideDate) {
     .then(function(r){ return r.json(); })
     .then(function(data){
         if (data && data.error) {
-            nmError(data.error + ' &nbsp;&mdash;&nbsp; <a href="/flights" style="color:#c9a84c;font-weight:700;">Try full search &rarr;</a>');
+            nmError(data.error || 'No flights available. Try a new destination or different dates.');
             return;
         }
         var offers = Array.isArray(data) ? data : (data.offers || data.data || []);
@@ -1632,8 +1631,7 @@ function nmSearchFlights(overrideDate) {
         nmRenderFlights(offers, from, to, depart);
     })
     .catch(function(e){
-        nmError('Search error: ' + (e.message||'network error') + '. '
-            + '<a href="/flights" style="color:#c9a84c;font-weight:700;">Try full search &rarr;</a>');
+        nmError('No flights available. Try a new destination or different dates.');
     });
 }
 
@@ -1668,9 +1666,7 @@ function nmSortPriority(a, b) {
 
 function nmRenderFlights(offers, from, to, depart) {
     if (!offers || offers.length === 0) {
-        nmNone('No flights found for <strong>'+from+' &rarr; '+to+'</strong> on '+nmFmtDate(depart)
-            +'.<br><small style="color:#999;margin-top:8px;display:block;">Try different dates or '
-            +'<a href="/flights" style="color:#c9a84c;">use the full search page</a>.</small>');
+        nmNone('No flights available for <strong>'+from+' &rarr; '+to+'</strong> on '+nmFmtDate(depart)+'. Try a new destination or different dates.');
         return;
     }
     // Default sort: cheapest first
