@@ -719,17 +719,33 @@ Route::get('/api/airports', function(\Illuminate\Http\Request $request) {
             }
         }
 
+        // Filter to only commercially-served airports using local DB (large/medium only).
+        // Removes general aviation airports like VNY, RFD that Duffel Places returns
+        // but that return 400 errors on flight search.
+        if (!empty($airports)) {
+            $codes = array_column($airports, 'code');
+            $validCodes = array_flip(
+                \App\Models\Airport::whereIn('iata_code', $codes)
+                    ->whereIn('type', ['large_airport'])
+                    ->pluck('iata_code')
+                    ->all()
+            );
+            $airports = array_values(array_filter($airports, function($ap) use ($validCodes) {
+                return isset($validCodes[$ap['code']]);
+            }));
+        }
+
         // Put city-group headers before their airports
         $results = [];
         $addedCities = [];
         foreach ($airports as $ap) {
             // Find city this airport belongs to (by matching city_name to cities list)
-            $cityKey = null;
+            $cityKey = null; $cityCode = null;
             foreach ($cities as $code => $cityName) {
-                if (strcasecmp($ap['city'], $cityName) === 0) { $cityKey = $cityName; break; }
+                if (strcasecmp($ap['city'], $cityName) === 0) { $cityKey = $cityName; $cityCode = $code; break; }
             }
             if ($cityKey && !in_array($cityKey, $addedCities)) {
-                $results[] = ['type' => 'city', 'name' => $cityKey, 'country' => $ap['country']];
+                $results[] = ['type' => 'city', 'name' => $cityKey, 'code' => $cityCode, 'country' => $ap['country']];
                 $addedCities[] = $cityKey;
             }
             $results[] = $ap;
@@ -915,3 +931,12 @@ Route::get('/api/seat-map/{offer_id}', function($offer_id) {
     }
 });
 
+
+// Duffel Stays
+use App\Http\Controllers\DuffelStaysController;
+Route::get('/stays', [DuffelStaysController::class, 'index'])->name('stays.index');
+Route::get('/stays/search', [DuffelStaysController::class, 'search'])->name('stays.search');
+Route::get('/stays/{searchId}/{accommodationId}', [DuffelStaysController::class, 'detail'])->name('stays.detail');
+Route::post('/stays/quote', [DuffelStaysController::class, 'quote'])->name('stays.quote');
+Route::post('/stays/reserve', [DuffelStaysController::class, 'reserve'])->name('stays.reserve');
+Route::get('/stays/confirmation/{id}', [DuffelStaysController::class, 'confirmation'])->name('stays.confirmation');

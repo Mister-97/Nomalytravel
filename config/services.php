@@ -93,4 +93,11 @@ return [
         "token"  => env("TRAVELPAYOUTS_TOKEN", ""),
         "marker" => env("TRAVELPAYOUTS_MARKER", ""),
     ],
+
+    'ticketnetwork' => [
+        'consumer_key'    => env('TN_CONSUMER_KEY'),
+        'consumer_secret' => env('TN_CONSUMER_SECRET'),
+        'wcid'            => env('TN_WCID_CATALOG', '23884'),
+        'bid'             => env('TN_BID', '14126'),
+    ],
 ];

@@ -3,27 +3,43 @@
 namespace App\Http\Controllers;
 
 use App\Services\TicketSqueezeService;
+use App\Services\TicketNetworkService;
 use Illuminate\Http\Request;
 
 class TicketsController extends Controller
 {
-    public function __construct(protected TicketSqueezeService $tickets) {}
+    public function __construct(
+        protected TicketSqueezeService $ticketSqueeze,
+        protected TicketNetworkService $ticketNetwork,
+    ) {}
 
     public function sports(Request $request)
     {
-        $result = $this->tickets->getSportsEvents($request->only('city', 'keyword', 'date'));
-        return view('tickets.sports', [
-            'events' => $result['events'],
-            'error'  => $result['error'],
-        ]);
+        $params = $request->only('city', 'keyword', 'date');
+
+        $tsResult = $this->ticketSqueeze->getSportsEvents($params);
+        $tnResult = $this->ticketNetwork->getSportsEvents($params);
+
+        $events = array_merge($tsResult['events'], $tnResult['events']);
+        $error  = $tsResult['error'] && $tnResult['error']
+            ? 'Both ticket sources returned errors.'
+            : null;
+
+        return view('tickets.sports', compact('events', 'error'));
     }
 
     public function concerts(Request $request)
     {
-        $result = $this->tickets->getConcertEvents($request->only('city', 'keyword', 'date'));
-        return view('tickets.concerts', [
-            'events' => $result['events'],
-            'error'  => $result['error'],
-        ]);
+        $params = $request->only('city', 'keyword', 'date');
+
+        $tsResult = $this->ticketSqueeze->getConcertEvents($params);
+        $tnResult = $this->ticketNetwork->getConcertEvents($params);
+
+        $events = array_merge($tsResult['events'], $tnResult['events']);
+        $error  = $tsResult['error'] && $tnResult['error']
+            ? 'Both ticket sources returned errors.'
+            : null;
+
+        return view('tickets.concerts', compact('events', 'error'));
     }
 }
