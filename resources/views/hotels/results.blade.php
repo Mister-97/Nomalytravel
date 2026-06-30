@@ -85,10 +85,12 @@
                             @for($s=1;$s<=$stars;$s++)<i class="fas fa-star"></i>@endfor
                         </div>
                         @endif
-                        @if($minRate)
-                        <div class="ht-card-price">${{ number_format($minRate, 0) }} <span>/ night</span></div>
                         @if($totalRate)
-                        <div class="ht-card-total">${{ number_format($totalRate, 0) }} total &bull; {{ $nights }} night{{ $nights > 1 ? "s" : "" }}</div>
+                        @if($nights > 1)
+                        <div class="ht-card-price">${{ number_format($totalRate, 0) }} <span>total</span></div>
+                        <div class="ht-card-total">${{ number_format($minRate, 0) }}/night &bull; {{ $nights }} nights</div>
+                        @else
+                        <div class="ht-card-price">${{ number_format($minRate, 0) }} <span>/ night</span></div>
                         @endif
                         @endif
                         @if(($hotel['source'] ?? '') === 'duffel' && !empty($hotel['duffelResultId']) && !empty($hotel['hotelId']))

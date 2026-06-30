@@ -2160,7 +2160,8 @@ function nmRenderHotels(hotels, dest, cin, cout, adl) {
         var stars = parseInt(h.categoryCode||h.stars||h.star_rating||0)||0;
         var starS = stars ? ('★').repeat(stars) : '';
         var rate  = h.minRate||h.total_amount||0;
-        var pStr  = rate ? '$'+parseFloat(rate).toFixed(0)+'/night' : 'Check price';
+        var nights = Math.max(1, Math.round((new Date(cout) - new Date(cin)) / 86400000));
+        var pStr  = rate ? (nights > 1 ? '$'+parseFloat(rate).toFixed(0)+' total' : '$'+parseFloat(rate).toFixed(0)+'/night') : 'Check price';
         var imgs  = h.images||[];
         var img   = h.image || h.thumbnail || (imgs.length ? imgs[0].path||imgs[0].url||'' : '');
         var addr  = (h.address&&h.address.content)||h.address||'';
