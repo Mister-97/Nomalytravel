@@ -38,7 +38,7 @@ class DuffelStaysService
                     ],
                 ],
                 'location' => [
-                    'radius'    => 80,
+                    'radius'    => 15,
                     'geographic_coordinates' => [
                         'latitude'  => (float) $params['latitude'],
                         'longitude' => (float) $params['longitude'],
