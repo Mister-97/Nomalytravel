@@ -10,7 +10,7 @@
         {{ $params['adults'] ?? 1 }} adult(s) &middot; {{ $params['rooms'] ?? 1 }} room(s)
     </p>
 
-    <a href="{{ route('stays.index') }}" class="btn btn-outline-secondary mb-4">Modify Search</a>
+    <a href="{{ route('hotels.index') }}" class="btn btn-outline-secondary mb-4">Modify Search</a>
 
     @if ($error ?? null)
         <div class="alert alert-warning">{{ $error }}</div>
@@ -51,7 +51,7 @@
                                 <p class="fw-bold mt-auto mb-1">{{ $currency }} {{ number_format($totalAmount, 2) }} total</p>
                                 <p class="text-muted small">Includes taxes and fees</p>
                             @endif
-                            <a href="{{ route('stays.detail', [$searchId, $acc['id']]) }}?{{ http_build_query($params) }}"
+                            <a href="{{ route('hotels.duffel.detail', $acc['id']) }}?{{ http_build_query($params) }}"
                                class="btn btn-primary mt-2">View Details</a>
                         </div>
                     </div>

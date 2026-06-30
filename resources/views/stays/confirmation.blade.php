@@ -118,7 +118,7 @@
     </div>
 
     <div class="text-center mt-4">
-        <a href="{{ route('stays.index') }}" class="btn btn-outline-primary">Search More Hotels</a>
+        <a href="{{ route('hotels.index') }}" class="btn btn-outline-primary">Search More Hotels</a>
     </div>
 
 </div>
