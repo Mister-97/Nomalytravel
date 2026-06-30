@@ -398,7 +398,7 @@ body { animation: nm-page-in .5s ease both; }
 /* ══════════════════════════════════════════════════════
    RESULTS AREA
 ══════════════════════════════════════════════════════ */
-#nm-results { background: #f1f4f9; min-height: 220px; }
+#nm-results { background: #f1f4f9; min-height: 220px; overflow-x: hidden; }
 #nm-results-inner {
   opacity: 0; transform: translateY(24px);
   transition: opacity .45s ease, transform .45s ease;
@@ -568,7 +568,7 @@ body { animation: nm-page-in .5s ease both; }
   text-decoration: none; transition: all .2s;
 }
 .nm-hc-btn:hover, .nm-ec-btn:hover { background: var(--gold); color: var(--navy); }
-.nm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); gap: 18px; }
+.nm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(272px, 1fr)); gap: 18px; max-width: 100%; }
 
 /* ── Alert boxes ──────────────────────────────────── */
 .nm-alert { border-radius: var(--radius-sm); padding: 14px 18px; font-size: 14px; font-weight: 600; font-family:'DM Sans',sans-serif; }
@@ -2164,7 +2164,7 @@ function nmRenderHotels(hotels, dest, cin, cout, adl) {
     var toolbar = '<div class="nm-results-hdr" style="flex-direction:column;align-items:flex-start;gap:10px;">'
         +'<div style="display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;gap:6px;">'
         +'<h4 class="nm-results-title"><i class="fas fa-hotel me-2" style="color:#c9a84c;"></i>'+dest+'</h4>'
-        +'<span style="font-size:13px;color:#888;" id="nm-h-count">'+hotels.length+' hotels &middot; '+cin+' &ndash; '+cout+'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'+'<span style="display:inline-flex;align-items:center;background:#070D1A;color:#C9A84C;border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;"><i class="fas fa-building" style="margin-right:5px;font-size:10px;"></i><span id="nm-h-count">'+hotels.length+'</span>&nbsp;hotels</span>'+'<span style="display:inline-flex;align-items:center;background:#f1f4f9;color:#555;border:1px solid #ddd;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;"><i class="fas fa-calendar-alt" style="margin-right:5px;font-size:10px;color:#C9A84C;"></i>'+cin+' &ndash; '+cout+'</span>'+'<span style="display:inline-flex;align-items:center;background:#f1f4f9;color:#555;border:1px solid #ddd;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;"><i class="fas fa-moon" style="margin-right:5px;font-size:10px;color:#C9A84C;"></i>'+nights+' night'+(nights>1?'s':'')+'</span>'+'</div></div>'
         +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">'
         +'<span style="font-size:11px;color:#999;">Sort:</span>'
         +'<button class="nm-hf-btn active" onclick="nmHSort(\'price-asc\',this)">Cheapest</button>'
@@ -2231,7 +2231,7 @@ function nmHApply(){
     });
     visible.forEach(function(c){grid.appendChild(c);});
     var cnt=document.getElementById("nm-h-count");
-    if(cnt)cnt.textContent=visible.length+" hotels · "+nmHCin+" – "+nmHCout;
+    if(cnt)cnt.textContent=visible.length;
 }
 
 
