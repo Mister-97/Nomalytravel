@@ -260,16 +260,18 @@ return response()->json(['hotels' => $hotels]);
 
     private function geocodeCity(string $city): ?array
     {
-        try {
-            $resp = \Illuminate\Support\Facades\Http::withHeaders(['User-Agent' => 'NomalyTravel/1.0'])
-                ->timeout(5)
-                ->get('https://nominatim.openstreetmap.org/search', ['q' => $city, 'format' => 'json', 'limit' => 1]);
-            $data = $resp->json();
-            if (!empty($data[0])) {
-                return ['latitude' => (float)$data[0]['lat'], 'longitude' => (float)$data[0]['lon']];
-            }
-        } catch (\Exception $e) {}
-        return null;
+        return \Illuminate\Support\Facades\Cache::remember('geocode:' . strtolower($city), 604800, function() use ($city) {
+            try {
+                $resp = \Illuminate\Support\Facades\Http::withHeaders(['User-Agent' => 'NomalyTravel/1.0'])
+                    ->timeout(5)
+                    ->get('https://nominatim.openstreetmap.org/search', ['q' => $city, 'format' => 'json', 'limit' => 1]);
+                $data = $resp->json();
+                if (!empty($data[0])) {
+                    return ['latitude' => (float)$data[0]['lat'], 'longitude' => (float)$data[0]['lon']];
+                }
+            } catch (\Exception $e) {}
+            return null;
+        });
     }
 
     private function normalizeDuffelResult(array $r, string $checkIn, string $checkOut, int $adults): array

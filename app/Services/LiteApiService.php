@@ -20,21 +20,24 @@ class LiteApiService
 $headers = ['X-API-Key' => $this->apiKey, 'Content-Type' => 'application/json'];
 
 // Auto-detect country code from city name using free geocoding
-$countryCode = 'US';
-try {
-    $geo = Http::withHeaders(['User-Agent' => 'NomalyTravel/1.0'])->get('https://nominatim.openstreetmap.org/search', [
-        'q' => $cityCode, 'format' => 'json', 'limit' => 1, 'addressdetails' => 1,
-    ]);
-    $geoData = $geo->json();
-    if (!empty($geoData[0]['address']['country_code'])) {
-        $countryCode = strtoupper($geoData[0]['address']['country_code']);
-    }
-} catch (\Exception $e) {}
+$countryCode = Cache::remember('geo_country:' . strtolower($cityCode), 604800, function() use ($cityCode) {
+    try {
+        $geo = Http::withHeaders(['User-Agent' => 'NomalyTravel/1.0'])->timeout(5)->get('https://nominatim.openstreetmap.org/search', [
+            'q' => $cityCode, 'format' => 'json', 'limit' => 1, 'addressdetails' => 1,
+        ]);
+        $data = $geo->json();
+        return !empty($data[0]['address']['country_code']) ? strtoupper($data[0]['address']['country_code']) : 'US';
+    } catch (\Exception $e) { return 'US'; }
+});
 
-$hotelRes = Http::withHeaders($headers)->get("{$this->baseUrl}/data/hotels", ['cityName' => $cityCode, 'countryCode' => $countryCode]);
-$hotelList = $hotelRes->json()['data'] ?? [];
-$hotelMap = collect($hotelList)->keyBy('id')->all();
-$hotelIds = collect($hotelList)->pluck('id')->take(20)->values()->all();
+$cacheKey = 'liteapi_hotels:' . strtolower($cityCode) . ':' . strtolower($countryCode);
+[$hotelMap, $hotelIds] = Cache::remember($cacheKey, 21600, function() use ($headers, $cityCode, $countryCode) {
+    $hotelRes = Http::withHeaders($headers)->get("{$this->baseUrl}/data/hotels", ['cityName' => $cityCode, 'countryCode' => $countryCode]);
+    $hotelList = $hotelRes->json()['data'] ?? [];
+    $map = collect($hotelList)->keyBy('id')->all();
+    $ids = collect($hotelList)->pluck('id')->take(20)->values()->all();
+    return [$map, $ids];
+});
 if (empty($hotelIds)) return ['error' => 'No hotels found', 'hotels' => []];
 $ratesRes = Http::withHeaders($headers)->post("{$this->baseUrl}/hotels/rates", ['hotelIds' => $hotelIds, 'checkin' => $checkIn, 'checkout' => $checkOut, 'currency' => $currency, 'guestNationality' => 'US', 'occupancies' => [['adults' => (int)$adults]]]);
 $result = $ratesRes->json();
