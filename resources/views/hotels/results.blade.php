@@ -72,6 +72,7 @@
                 <button class="ht-sort-btn" onclick="htSort('price-desc',this)">Most Expensive</button>
                 <button class="ht-sort-btn" onclick="htSort('stars-desc',this)">Stars ↓</button>
                 <button class="ht-sort-btn" onclick="htSort('stars-asc',this)">Stars ↑</button>
+                <button class="ht-sort-btn" onclick="htSort('review-desc',this)">Highest Rated</button>
             </div>
             <div class="ht-divider d-none d-md-block"></div>
             <div class="ht-filter-group">
@@ -105,9 +106,11 @@
                 $minRate = $totalRate ? round($totalRate / $nights, 2) : null;
                 $source  = $hotel['source'] ?? 'liteapi';
             @endphp
+            @php $reviewScore = $hotel['review_score'] ?? ($hotel['rating'] ?? 0); @endphp
             <div class="ht-card"
                  data-price="{{ $totalRate ?? 999999 }}"
                  data-stars="{{ $stars }}"
+                 data-review="{{ $reviewScore }}"
                  data-source="{{ $source }}">
                 @if($img)
                     <img class="ht-card-img" src="{{ $img }}" alt="{{ $name }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -188,6 +191,7 @@ function htApply() {
         if (htSortMode === 'price-desc') return pb - pa;
         if (htSortMode === 'stars-desc') return sb !== sa ? sb - sa : pa - pb;
         if (htSortMode === 'stars-asc')  return sa !== sb ? sa - sb : pa - pb;
+        if (htSortMode === 'review-desc') { var ra = parseFloat(a.dataset.review)||0; var rb = parseFloat(b.dataset.review)||0; return rb !== ra ? rb - ra : pa - pb; }
         return 0;
     });
 
