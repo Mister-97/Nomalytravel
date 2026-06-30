@@ -2153,327 +2153,87 @@ function nmSearchHotels() {
     });
 }
 
+var nmHotelsData=[], nmHSortMode="price-asc", nmHMinStars=0, nmHCin="", nmHCout="", nmHAdl=2;
 function nmRenderHotels(hotels, dest, cin, cout, adl) {
     if (!hotels||hotels.length===0) {
-        nmNone('No hotels found in '+dest+'.<br><small style="color:#999">Try different dates or visit our <a href="/hotels" style="color:#c9a84c;">hotels page</a>.</small>');
+        nmNone("No hotels found in "+dest+".<br><small style=\"color:#999\">Try different dates or visit our <a href=\"/hotels\" style=\"color:#c9a84c;\">hotels page</a>.</small>");
         return;
     }
-    var html = '<div class="nm-results-hdr">'
+    nmHotelsData=hotels; nmHCin=cin; nmHCout=cout; nmHAdl=adl||2; nmHSortMode="price-asc"; nmHMinStars=0;
+    var nights = Math.max(1, Math.round((new Date(cout)-new Date(cin))/86400000));
+    var toolbar = '<div class="nm-results-hdr" style="flex-direction:column;align-items:flex-start;gap:10px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;gap:6px;">'
         +'<h4 class="nm-results-title"><i class="fas fa-hotel me-2" style="color:#c9a84c;"></i>'+dest+'</h4>'
-        +'<span style="font-size:13px;color:#888;">'+hotels.length+' hotels · '+cin+' – '+cout+'</span></div>'
-        +'<div class="nm-grid">';
-    hotels.slice(0,12).forEach(function(h){
-        var name  = h.name||'Hotel';
-        var stars = parseInt(h.categoryCode||h.stars||h.star_rating||0)||0;
-        var starS = stars ? ('★').repeat(stars) : '';
-        var rate  = h.minRate||h.total_amount||0;
-        var nights = Math.max(1, Math.round((new Date(cout) - new Date(cin)) / 86400000));
-        var perNight = nights > 1 ? Math.round(rate / nights) : null;
-        var pStr  = rate ? (nights > 1 ? '$'+parseFloat(rate).toFixed(0)+' total' : '$'+parseFloat(rate).toFixed(0)+'/night') : 'Check price';
-        var subStr = (nights > 1 && perNight) ? '$'+perNight+'/night &middot; '+nights+' nights' : '';
-        var imgs  = h.images||[];
-        var img   = h.image || h.thumbnail || (imgs.length ? imgs[0].path||imgs[0].url||'' : '');
-        var addr  = (h.address&&h.address.content)||h.address||'';
-        html += '<div class="nm-hc">'
-            +(img?'<img src="'+img+'" class="nm-hc-img" alt="'+name+'" loading="lazy" onerror="this.outerHTML=\'<div class=nm-hc-ph>🏨</div>\'">'
-                 :'<div class="nm-hc-ph">🏨</div>')
+        +'<span style="font-size:13px;color:#888;" id="nm-h-count">'+hotels.length+' hotels &middot; '+cin+' &ndash; '+cout+'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">'
+        +'<span style="font-size:11px;color:#999;">Sort:</span>'
+        +'<button class="nm-hf-btn active" onclick="nmHSort(\'price-asc\',this)">Cheapest</button>'
+        +'<button class="nm-hf-btn" onclick="nmHSort(\'price-desc\',this)">Most Expensive</button>'
+        +'<button class="nm-hf-btn" onclick="nmHSort(\'review-desc\',this)">Highest Rated</button>'
+        +'<button class="nm-hf-btn" onclick="nmHSort(\'stars-desc\',this)">Stars &#8595;</button>'
+        +'<span style="width:1px;height:16px;background:#ddd;margin:0 3px;display:inline-block;"></span>'
+        +'<span style="font-size:11px;color:#999;">Stars:</span>'
+        +'<button class="nm-hsf-btn active" onclick="nmHFilter(0,this)">All</button>'
+        +'<button class="nm-hsf-btn" onclick="nmHFilter(2,this)">2&#9733;+</button>'
+        +'<button class="nm-hsf-btn" onclick="nmHFilter(3,this)">3&#9733;+</button>'
+        +'<button class="nm-hsf-btn" onclick="nmHFilter(4,this)">4&#9733;+</button>'
+        +'<button class="nm-hsf-btn" onclick="nmHFilter(5,this)">5&#9733;</button>'
+        +'</div></div>';
+    var gridHtml = '<div class="nm-grid" id="nm-h-grid">';
+    hotels.slice(0,40).forEach(function(h){
+        var name=h.name||"Hotel";
+        var stars=parseInt(h.categoryCode||h.stars||h.star_rating||0)||0;
+        var starS=stars?("&#9733;").repeat(stars):"";
+        var rate=h.minRate||h.total_amount||0;
+        var perNight=nights>1?Math.round(rate/nights):null;
+        var pStr=rate?(nights>1?"$"+parseFloat(rate).toFixed(0)+" total":"$"+parseFloat(rate).toFixed(0)+"/night"):"Check price";
+        var subStr=(nights>1&&perNight)?"$"+perNight+"/night &middot; "+nights+" nights":"";
+        var imgs=h.images||[];
+        var img=h.image||h.thumbnail||(imgs.length?imgs[0].path||imgs[0].url||"":"");
+        var addr=(h.address&&h.address.content)||h.address||"";
+        var review=parseFloat(h.review_score)||0;
+        gridHtml+='<div class="nm-hc" data-price="'+rate+'" data-stars="'+stars+'" data-review="'+review+'">'
+            +(img?'<img src="'+img+'" class="nm-hc-img" alt="'+name+'" loading="lazy" onerror="this.style.display=\'none\'">':'')
             +'<div class="nm-hc-body">'
             +'<div class="nm-hc-name">'+name+'</div>'
             +(starS?'<div class="nm-hc-stars">'+starS+'</div>':'')
+            +(review?'<div style="font-size:11px;color:#888;margin-bottom:4px;"><i class="fas fa-star" style="color:#C9A84C;font-size:10px;"></i> '+review+' / 10</div>':'')
             +(addr?'<div class="nm-hc-meta"><i class="fas fa-map-marker-alt"></i> '+addr+'</div>':'')
             +'<div class="nm-hc-price">'+pStr+'</div>'
             +(subStr?'<div style="font-size:11px;color:#aaa;margin-top:-6px;margin-bottom:8px;">'+subStr+'</div>':'')
-            +(h.source==='duffel'&&h.hotelId?'<a href="/hotels/stay/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>':'<a href="/hotels/detail/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>')
+            +(h.source==="duffel"&&h.hotelId?'<a href="/hotels/stay/'+h.hotelId+'?check_in='+cin+"&check_out="+cout+"&adults="+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>':'<a href="/hotels/detail/'+h.hotelId+'?check_in='+cin+"&check_out="+cout+"&adults="+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>')
             +'</div></div>';
     });
-    html += '</div>';
-    nmShowResults(html);
+    gridHtml+='</div>';
+    nmShowResults(toolbar+gridHtml);
 }
-
-// ════════════════════════════════════════════════════
-// SPORTS
-// ════════════════════════════════════════════════════
-function nmSearchSports() {
-    var city = document.getElementById('nm-sp-city').value.trim();
-    var kw   = document.getElementById('nm-sp-kw').value;
-    var dt   = document.getElementById('nm-sp-date').value;
-    nmLoading('Finding sports events'+(city?' in '+city:'')+'&hellip;');
-    var qs = (city?'city='+encodeURIComponent(city)+'&':'')+(kw?'keyword='+encodeURIComponent(kw)+'&':'')+(dt?'date='+encodeURIComponent(dt):'');
-    fetch('/api/home/sports?'+qs, {headers:{'X-Requested-With':'XMLHttpRequest'}})
-    .then(function(r){return r.json();})
-    .then(function(d){
-        if(d.error&&!(d.events&&d.events.length)) { nmError(d.error+' &nbsp;<a href="/sports" style="color:#c9a84c;">View sports page</a>'); return; }
-        nmRenderEvents(d.events||[], 'sports', city);
-    })
-    .catch(function(){ nmError('Could not load events. <a href="/sports" style="color:#c9a84c;">Visit sports page</a>.'); });
-}
-
-// ════════════════════════════════════════════════════
-// CONCERTS
-// ════════════════════════════════════════════════════
-function nmSearchConcerts() {
-    var city = document.getElementById('nm-co-city').value.trim();
-    var kw   = document.getElementById('nm-co-kw').value.trim();
-    var dt   = document.getElementById('nm-co-date').value;
-    nmLoading('Finding concerts'+(city?' in '+city:'')+'&hellip;');
-    var qs = (city?'city='+encodeURIComponent(city)+'&':'')+(kw?'keyword='+encodeURIComponent(kw)+'&':'')+(dt?'date='+encodeURIComponent(dt):'');
-    fetch('/api/home/concerts?'+qs, {headers:{'X-Requested-With':'XMLHttpRequest'}})
-    .then(function(r){return r.json();})
-    .then(function(d){
-        if(d.error&&!(d.events&&d.events.length)) { nmError(d.error+' &nbsp;<a href="/concerts" style="color:#c9a84c;">View concerts page</a>'); return; }
-        nmRenderEvents(d.events||[], 'concerts', city);
-    })
-    .catch(function(){ nmError('Could not load events. <a href="/concerts" style="color:#c9a84c;">Visit concerts page</a>.'); });
-}
-
-function nmRenderEvents(events, type, city) {
-    if (!events||events.length===0) {
-        nmNone('No '+(type==='sports'?'sports events':'concerts')+' found'+(city?' in '+city:'')+'.<br><small style="color:#999">Try a different city, date, or <a href="/'+type+'" style="color:#c9a84c;">browse all events</a>.</small>');
-        return;
-    }
-    var icon    = type==='sports' ? '🏟' : '🎵';
-    var pageUrl = '/'+type;
-    var title   = type==='sports' ? 'Sports Events' : 'Concerts &amp; Events';
-    var html = '<div class="nm-results-hdr">'
-        +'<h4 class="nm-results-title">'+icon+' '+title+(city?' &middot; '+city:'')+'</h4>'
-        +'<span style="font-size:13px;color:#888;">'+events.length+' found &nbsp;<a href="'+pageUrl+'" style="font-size:12px;color:#c9a84c;">(view all)</a></span></div>'
-        +'<div class="nm-grid">';
-    events.slice(0,12).forEach(function(ev){
-        var img  = ev.image || (ev.images&&ev.images[0] ? ev.images[0].url : '');
-        var ven  = ev._embedded&&ev._embedded.venues ? ev._embedded.venues[0] : {};
-        var vn   = ven.name||'';
-        var vcity= (ven.city?ven.city.name:'')+(ven.state?', '+ven.state.stateCode:'');
-        var dstr = '';
-        if (ev.dates&&ev.dates.start&&ev.dates.start.localDate) {
-            try { var d=new Date(ev.dates.start.localDate+'T12:00:00'); dstr=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }
-            catch(e){ dstr=ev.dates.start.localDate; }
-        }
-        var genre= ev.classifications&&ev.classifications[0] ?
-            (ev.classifications[0].genre ? ev.classifications[0].genre.name : (ev.classifications[0].segment ? ev.classifications[0].segment.name : '')) : '';
-        var mp   = ev.priceRanges&&ev.priceRanges[0] ? ev.priceRanges[0].min : null;
-        var pStr = mp ? 'From $'+Math.floor(mp) : 'Check prices';
-        var url  = ev.url||pageUrl;
-        html += '<div class="nm-ec">'
-            +(img?'<img src="'+img+'" class="nm-ec-img" alt="'+ev.name+'" loading="lazy">'
-                 :'<div class="nm-ec-ph">'+icon+'</div>')
-            +'<div class="nm-ec-body">'
-            +'<p class="nm-ec-cat">'+(genre||(type==='sports'?'Sports':'Music'))+'</p>'
-            +'<h5 class="nm-ec-title">'+ev.name+'</h5>'
-            +'<div class="nm-ec-meta">'
-            +(vn?'<div><i class="fas fa-map-marker-alt"></i> '+vn+(vcity?', '+vcity:'')+'</div>':'')
-            +(dstr?'<div><i class="fas fa-calendar"></i> '+dstr+'</div>':'')
-            +'</div><div class="nm-ec-price">'+pStr+'</div>'
-            +'<a href="'+url+'" target="_blank" class="nm-ec-btn"><i class="fas fa-ticket-alt me-1"></i>Get Tickets</a>'
-            +'</div></div>';
+function nmHSort(mode,btn){nmHSortMode=mode;document.querySelectorAll(".nm-hf-btn").forEach(function(b){b.classList.remove("active");});btn.classList.add("active");nmHApply();}
+function nmHFilter(stars,btn){nmHMinStars=stars;document.querySelectorAll(".nm-hsf-btn").forEach(function(b){b.classList.remove("active");});btn.classList.add("active");nmHApply();}
+function nmHApply(){
+    var grid=document.getElementById("nm-h-grid");
+    if(!grid)return;
+    var cards=Array.from(grid.querySelectorAll(".nm-hc"));
+    var visible=cards.filter(function(c){
+        var s=parseInt(c.dataset.stars)||0;
+        var show=nmHMinStars===5?s>=5:s>=nmHMinStars;
+        c.style.display=show?"":"none";
+        return show;
     });
-    html += '</div>';
-    nmShowResults(html);
-}
-
-// ════════════════════════════════════════════════════
-// BOOKING DRAWER
-// ════════════════════════════════════════════════════
-var _nmStripe=null, _nmCard=null;
-
-function nmOpenBooking(offerId, amt, cur, from, to, aln, dep, arr, stops) {
-    document.getElementById('bk-offer').value = offerId;
-    document.getElementById('bk-amt').value   = amt;
-    document.getElementById('bk-cur').value   = cur;
-    document.getElementById('bk-from').value  = from;
-    document.getElementById('bk-to').value    = to;
-    document.getElementById('bk-date').value  = window._nmCtx ? window._nmCtx.depart : '';
-
-    var pStr = cur==='USD' ? '$'+parseFloat(amt).toFixed(0) : parseFloat(amt).toFixed(0)+' '+cur;
-    var stpStr = stops==0 ? 'Nonstop' : stops+' stop'+(stops>1?'s':'');
-
-    document.getElementById('nm-drw-summary').innerHTML =
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
-        +'<div><div class="nm-drw-route">'+from+' &rarr; '+to+'</div>'
-        +'<div class="nm-drw-details">'+aln+' &middot; '+dep+' &ndash; '+arr+' &middot; '+stpStr+'</div></div>'
-        +'<div class="nm-drw-price">'+pStr+'</div></div>';
-    document.getElementById('nm-drw-sub').textContent = from+' → '+to+' · '+aln;
-    document.getElementById('nm-book-msg').innerHTML = '';
-    document.getElementById('nm-card-err').textContent = '';
-
-    var btn = document.getElementById('nm-pay-btn');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-lock me-2"></i> Pay '+pStr+' &amp; Confirm Booking';
-
-    // Load Stripe on demand
-    if (!_nmStripe) {
-        if (typeof Stripe !== 'undefined') {
-            _nmInitStripe();
-        } else {
-            var s = document.createElement('script');
-            s.src = 'https://js.stripe.com/v3/';
-            s.onload = _nmInitStripe;
-            document.head.appendChild(s);
-        }
-    } else if (_nmCard) {
-        _nmCard.clear();
-    }
-
-    document.getElementById('nm-overlay').classList.add('open');
-    document.getElementById('nm-drawer').classList.add('open');
-    document.body.style.overflow = 'hidden';
-}
-
-function _nmInitStripe() {
-    _nmStripe = Stripe('{{ env('STRIPE_KEY') }}');
-    var els = _nmStripe.elements();
-    _nmCard = els.create('card', {
-        style:{ base:{ fontSize:'15px', color:'#0a1628', '::placeholder':{color:'#bbb'}, fontFamily:'inherit' } }
+    visible.sort(function(a,b){
+        var pa=parseFloat(a.dataset.price)||999999,pb=parseFloat(b.dataset.price)||999999;
+        var sa=parseInt(a.dataset.stars)||0,sb=parseInt(b.dataset.stars)||0;
+        var ra=parseFloat(a.dataset.review)||0,rb=parseFloat(b.dataset.review)||0;
+        if(nmHSortMode==="price-asc")return pa-pb;
+        if(nmHSortMode==="price-desc")return pb-pa;
+        if(nmHSortMode==="review-desc")return rb!==ra?rb-ra:pa-pb;
+        if(nmHSortMode==="stars-desc")return sb!==sa?sb-sa:pa-pb;
+        return 0;
     });
-    _nmCard.mount('#nm-card-el');
-    _nmCard.on('change', function(e){
-        document.getElementById('nm-card-err').textContent = e.error ? e.error.message : '';
-    });
+    visible.forEach(function(c){grid.appendChild(c);});
+    var cnt=document.getElementById("nm-h-count");
+    if(cnt)cnt.textContent=visible.length+" hotels · "+nmHCin+" – "+nmHCout;
 }
 
-function nmCloseDrawer() {
-    document.getElementById('nm-overlay').classList.remove('open');
-    document.getElementById('nm-drawer').classList.remove('open');
-    document.body.style.overflow = '';
-}
-
-function nmSubmitBooking(e) {
-    e.preventDefault();
-    var btn  = document.getElementById('nm-pay-btn');
-    var fn   = document.getElementById('bk-fn').value.trim();
-    var ln   = document.getElementById('bk-ln').value.trim();
-    var em   = document.getElementById('bk-em').value.trim();
-    var ph   = document.getElementById('bk-ph').value.trim();
-    var oid  = document.getElementById('bk-offer').value;
-    var amt  = parseFloat(document.getElementById('bk-amt').value);
-    var cur  = document.getElementById('bk-cur').value;
-    var from = document.getElementById('bk-from').value;
-    var to   = document.getElementById('bk-to').value;
-    var dt   = document.getElementById('bk-date').value;
-
-    if(!fn||!ln||!em){ document.getElementById('nm-book-msg').innerHTML='<div class="nm-alert nm-alert-err mb-2">Please fill in all required fields.</div>'; return; }
-
-    btn.disabled=true;
-    btn.innerHTML='<i class="fas fa-spinner fa-spin me-2"></i>Processing…';
-    document.getElementById('nm-card-err').textContent='';
-    document.getElementById('nm-book-msg').innerHTML='';
-
-    var csrf = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
-
-    // Step 1: Create PaymentIntent
-    fetch('/api/flights/payment-intent',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':csrf,'X-Requested-With':'XMLHttpRequest'},
-        body:JSON.stringify({offer_id:oid, amount:amt, currency:cur})
-    })
-    .then(function(r){return r.json();})
-    .then(function(d){
-        if(d.error){
-            document.getElementById('nm-book-msg').innerHTML='<div class="nm-alert nm-alert-err mb-2">'+d.error+'</div>';
-            btn.disabled=false; btn.innerHTML='<i class="fas fa-lock me-2"></i>Retry Payment'; return Promise.reject('pi_error');
-        }
-        // Step 2: Confirm card
-        return _nmStripe.confirmCardPayment(d.clientSecret,{
-            payment_method:{ card:_nmCard, billing_details:{name:fn+' '+ln, email:em} }
-        });
-    })
-    .then(function(res){
-        if(!res||res===undefined) return;
-        if(res.error){
-            document.getElementById('nm-card-err').textContent=res.error.message;
-            btn.disabled=false; btn.innerHTML='<i class="fas fa-lock me-2"></i>Retry Payment'; return Promise.reject('card_error');
-        }
-        // Step 3: Save booking
-        return fetch('/api/flights/book',{
-            method:'POST',
-            headers:{'Content-Type':'application/json','X-CSRF-TOKEN':csrf,'X-Requested-With':'XMLHttpRequest'},
-            body:JSON.stringify({offer_id:oid, payment_intent_id:res.paymentIntent.id,
-                first_name:fn, last_name:ln, email:em, phone:ph,
-                from:from, to:to, depart_date:dt, price:amt, currency:cur,
-                adults: document.getElementById('nm-adults').value||1})
-        });
-    })
-    .then(function(r){ if(r&&typeof r.json==='function') return r.json(); })
-    .then(function(bk){
-        if(!bk) return;
-        if(bk.success){
-            document.getElementById('nm-book-form').innerHTML =
-                '<div class="nm-alert nm-alert-ok text-center" style="padding:30px;">'
-                +'<i class="fas fa-check-circle fa-3x d-block mb-3" style="color:#27ae60;"></i>'
-                +'<h5 style="font-weight:900;color:#0a1628;">Booking Confirmed!</h5>'
-                +'<p>Thank you, '+fn+'! Booking reference: <strong>'+(bk.reference||'#'+bk.booking_id)+'</strong></p>'
-                +'<p style="font-size:13px;color:#666;">Confirmation sent to '+em+'</p>'
-                +'</div>';
-        } else {
-            document.getElementById('nm-book-msg').innerHTML='<div class="nm-alert nm-alert-err mb-2">'+(bk.error||'Booking failed.')+'</div>';
-            btn.disabled=false; btn.innerHTML='<i class="fas fa-lock me-2"></i>Retry';
-        }
-    })
-    .catch(function(err){
-        if(err==='pi_error'||err==='card_error') return;
-        document.getElementById('nm-book-msg').innerHTML='<div class="nm-alert nm-alert-err mb-2">Payment error. Please try again.</div>';
-        btn.disabled=false; btn.innerHTML='<i class="fas fa-lock me-2"></i>Retry Payment';
-    });
-}
-
-
-function nmSearchCars(btn) {
-    var panel = (btn && btn.closest) ? btn.closest('.nm-gf-panel') : document.getElementById('panel-cars');
-    if (!panel) panel = document.getElementById('panel-cars');
-    var pickupEl  = panel ? panel.querySelector('input[type="text"]') : null;
-    var fromEl    = panel ? panel.querySelector('input[type="date"]:first-of-type') : null;
-    var toEl      = panel ? panel.querySelector('input[type="date"]:last-of-type') : null;
-    var ageEl     = panel ? panel.querySelector('select') : null;
-    if (!pickupEl || !fromEl || !toEl || !ageEl) {
-        nmError('Car search form not ready. Please refresh the page.');
-        return;
-    }
-    var pickup    = pickupEl.value.trim();
-    var fromDate  = fromEl.value;
-    var toDate    = toEl.value;
-    var age       = ageEl.value;
-    if (!pickup)   { nmError('Please enter a pick-up location.'); return; }
-    if (!fromDate) { nmError('Please select a pick-up date.'); return; }
-    if (!toDate)   { nmError('Please select a return date.'); return; }
-
-    nmLoading('Searching cars in ' + pickup + '…');
-
-    fetch('/api/home/cars?pickup=' + encodeURIComponent(pickup) + '&checkin=' + encodeURIComponent(fromDate) + '&checkout=' + encodeURIComponent(toDate) + '&age=' + age, {
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-        if (d.error) { nmError(d.error); return; }
-        nmRenderCars(d.cars || [], pickup, fromDate, toDate);
-    })
-    .catch(function() { nmError('Car search failed. Please try again.'); });
-}
-
-function nmRenderCars(cars, pickup, checkin, checkout) {
-    if (!cars || cars.length === 0) {
-        nmNone('No cars found for ' + pickup + '.');
-        return;
-    }
-    var html = '<div class="nm-results-hdr">'
-        + '<h4 class="nm-results-title"><i class="fas fa-car me-2" style="color:#c9a84c;"></i>Cars in ' + pickup + '</h4>'
-        + '<span style="font-size:13px;color:#888;">' + cars.length + ' vehicles • ' + checkin + ' – ' + checkout + '</span></div>'
-        + '<div class="nm-grid">';
-    cars.forEach(function(c) {
-        html += '<div class="nm-hc">'
-            + '<img src="' + c.image + '" class="nm-hc-img" alt="' + c.name + '" loading="lazy" onerror="this.outerHTML=\'<div class=nm-hc-ph>&#x1F697;</div>\'">'  
-            + '<div class="nm-hc-body">'
-            + '<div class="nm-hc-name">' + c.name + '</div>'
-            + '<div class="nm-hc-meta" style="font-size:11px;color:#888;margin-bottom:6px;">'
-            + '<i class="fas fa-building me-1" style="color:#c9a84c;"></i>' + c.company
-            + '  ·  <i class="fas fa-users me-1" style="color:#c9a84c;"></i>' + c.seats + ' seats'
-            + '  ·  <i class="fas fa-cog me-1" style="color:#c9a84c;"></i>' + c.transmission
-            + '</div>'
-            + '<div style="font-size:11px;color:#c9a84c;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">' + c.category + '</div>'
-            + '<a href="' + c.booking_url + '" target="_blank" class="nm-hc-btn" style="margin-top:14px;"><i class="fas fa-tag me-1"></i>See Prices &amp; Book</a>'
-            + '</div></div>';
-    });
-    html += '</div>';
-    nmShowResults(html);
-}
 
 // ── Typewriter effect ───────────────────────────────
 (function() {
