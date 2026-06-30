@@ -40,6 +40,9 @@
 .ht-empty { text-align:center; padding:60px 20px; color:#888; }
 .ht-empty i { font-size:3rem; color:#C9A84C; margin-bottom:16px; display:block; }
 .ht-no-results { display:none; text-align:center; padding:40px; color:#888; font-size:14px; }
+.ht-stats-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-bottom:16px; }
+.ht-stat-badge { display:inline-flex; align-items:center; background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:600; backdrop-filter:blur(4px); }
+.ht-stat-badge.ht-stat-count { background:rgba(201,168,76,0.25); color:#C9A84C; border-color:rgba(201,168,76,0.4); }
 @media(max-width:600px){
     .ht-toolbar-inner { flex-direction:column; align-items:flex-start; }
 }
@@ -48,12 +51,18 @@
 
 <div class="ht-results-header">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-start mb-3">
-            <div>
-                <h2><i class="fas fa-hotel me-2"></i>{{ $search['city'] }}</h2>
-                <p>{{ $search['check_in'] }} &rarr; {{ $search['check_out'] }} &bull; {{ $search['adults'] }} adult{{ $search['adults']>1?'s':'' }}</p>
-            </div>
-            <a href="{{ route('hotels.index') }}" class="ht-back-btn mt-1"><i class="fas fa-arrow-left me-1"></i> New Search</a>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0"><i class="fas fa-hotel me-2"></i>{{ $search['city'] }}</h2>
+            <a href="{{ route('hotels.index') }}" class="ht-back-btn"><i class="fas fa-arrow-left me-1"></i> New Search</a>
+        </div>
+        <div class="ht-stats-row">
+            @if(!empty($hotels))
+            <span class="ht-stat-badge ht-stat-count"><i class="fas fa-building me-1"></i><span id="ht-header-count">{{ count($hotels) }}</span> hotels</span>
+            @endif
+            <span class="ht-stat-badge"><i class="fas fa-calendar-alt me-1"></i>{{ \Carbon\Carbon::parse($search['check_in'])->format('M j') }} &ndash; {{ \Carbon\Carbon::parse($search['check_out'])->format('M j, Y') }}</span>
+            @php $hNights = max(1, \Carbon\Carbon::parse($search['check_in'])->diffInDays(\Carbon\Carbon::parse($search['check_out']))); @endphp
+            <span class="ht-stat-badge"><i class="fas fa-moon me-1"></i>{{ $hNights }} night{{ $hNights>1?'s':'' }}</span>
+            <span class="ht-stat-badge"><i class="fas fa-user me-1"></i>{{ $search['adults'] }} adult{{ $search['adults']>1?'s':'' }}</span>
         </div>
     </div>
 </div>
@@ -68,11 +77,11 @@
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <div class="ht-sort-group">
                 <span class="ht-sort-label">Sort:</span>
-                <button class="ht-sort-btn active" onclick="htSort('price-asc',this)">Cheapest</button>
-                <button class="ht-sort-btn" onclick="htSort('price-desc',this)">Most Expensive</button>
-                <button class="ht-sort-btn" onclick="htSort('stars-desc',this)">Stars ↓</button>
-                <button class="ht-sort-btn" onclick="htSort('stars-asc',this)">Stars ↑</button>
-                <button class="ht-sort-btn" onclick="htSort('review-desc',this)">Highest Rated</button>
+                <button class="ht-sort-btn active" onclick="htSort('price-asc',this)" ondblclick="htReset()">Cheapest</button>
+                <button class="ht-sort-btn" onclick="htSort('price-desc',this)" ondblclick="htReset()">Most Expensive</button>
+                <button class="ht-sort-btn" onclick="htSort('stars-desc',this)" ondblclick="htReset()">Stars ↓</button>
+                <button class="ht-sort-btn" onclick="htSort('stars-asc',this)" ondblclick="htReset()">Stars ↑</button>
+                <button class="ht-sort-btn" onclick="htSort('review-desc',this)" ondblclick="htReset()">Highest Rated</button>
             </div>
             <div class="ht-divider d-none d-md-block"></div>
             <div class="ht-filter-group">
@@ -162,6 +171,14 @@ function htSort(mode, btn) {
     htApply();
 }
 
+function htReset() {
+    htSortMode = 'price-asc';
+    var btns = document.querySelectorAll('.ht-sort-btn');
+    btns.forEach(b => b.classList.remove('active'));
+    btns[0].classList.add('active');
+    htApply();
+}
+
 function htFilter(stars, btn) {
     htMinStars = stars;
     document.querySelectorAll('.ht-star-btn').forEach(b => b.classList.remove('active'));
@@ -200,6 +217,8 @@ function htApply() {
 
     // Update count
     document.getElementById('ht-visible-count').textContent = visible.length;
+    var hc = document.getElementById('ht-header-count');
+    if (hc) hc.textContent = visible.length;
     document.getElementById('ht-no-results').style.display = visible.length === 0 ? 'block' : 'none';
 }
 </script>
