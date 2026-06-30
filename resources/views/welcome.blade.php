@@ -545,6 +545,8 @@ body { animation: nm-page-in .5s ease both; }
 .nm-hc-stars { color: var(--gold); font-size: 12px; margin-bottom: 5px; }
 .nm-hc-meta, .nm-ec-meta { font-size: 12px; color: #999; line-height: 1.65; }
 .nm-hc-meta i, .nm-ec-meta i { color: var(--gold); width: 14px; }
+.nm-dm-btn { border:1px solid #ddd; background:#fff; color:#777; border-radius:12px; padding:3px 10px; font-size:10px; font-weight:700; cursor:pointer; transition:all .15s; }
+.nm-dm-btn.active { background:#070D1A; color:#C9A84C; border-color:#070D1A; }
 .nm-hf-btn, .nm-hsf-btn {
   border:1.5px solid #ddd; background:#fff; color:#444; border-radius:20px;
   padding:4px 12px; font-size:11px; font-weight:600; cursor:pointer; transition:all .15s;
@@ -894,10 +896,14 @@ body { animation: nm-page-in .5s ease both; }
                   </select>
                 </div>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-6 col-md-3">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-calendar"></i>Date</label>
-                  <input type="date" id="nm-sp-date" min="{{ date('Y-m-d') }}">
+                  <div style="display:flex;gap:4px;margin-bottom:5px;">
+                    <button type="button" class="nm-dm-btn active" data-group="nm-sp" onclick="nmToggleDM(this,'nm-sp')">Exact</button>
+                    <button type="button" class="nm-dm-btn" data-group="nm-sp" onclick="nmToggleDM(this,'nm-sp')">Month</button>
+                  </div>
+                  <input type="date" id="nm-sp-date" min="{{ date('Y-m-d') }}" style="width:100%">
                 </div>
               </div>
               <div class="col-12 col-md-auto d-flex align-items-stretch" style="min-width:160px">
@@ -923,10 +929,14 @@ body { animation: nm-page-in .5s ease both; }
                   <input type="text" id="nm-co-kw" autocomplete="off" placeholder="e.g. Taylor Swift, Hip-Hop">
                 </div>
               </div>
-              <div class="col-6 col-md-2">
+              <div class="col-6 col-md-3">
                 <div class="nm-gf-field">
                   <label><i class="fas fa-calendar"></i>Date</label>
-                  <input type="date" id="nm-co-date" min="{{ date('Y-m-d') }}">
+                  <div style="display:flex;gap:4px;margin-bottom:5px;">
+                    <button type="button" class="nm-dm-btn active" data-group="nm-co" onclick="nmToggleDM(this,'nm-co')">Exact</button>
+                    <button type="button" class="nm-dm-btn" data-group="nm-co" onclick="nmToggleDM(this,'nm-co')">Month</button>
+                  </div>
+                  <input type="date" id="nm-co-date" min="{{ date('Y-m-d') }}" style="width:100%">
                 </div>
               </div>
               <div class="col-12 col-md-auto d-flex align-items-stretch" style="min-width:160px">
@@ -2234,6 +2244,40 @@ function nmHApply(){
     if(cnt)cnt.textContent=visible.length;
 }
 
+
+function nmToggleDM(btn, prefix) {
+    var isMonth = btn.textContent.trim() === 'Month';
+    var inp = document.getElementById(prefix + '-date');
+    inp.value = '';
+    inp.type = isMonth ? 'month' : 'date';
+    inp.min  = isMonth ? new Date().toISOString().slice(0,7) : new Date().toISOString().slice(0,10);
+    document.querySelectorAll('.nm-dm-btn[data-group="' + prefix + '"]').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+}
+
+function nmSearchSports() {
+    var city = document.getElementById('nm-sp-city').value.trim();
+    var kw   = document.getElementById('nm-sp-kw').value;
+    var date = document.getElementById('nm-sp-date').value;
+    if (!city) { alert('Please enter a city.'); return; }
+    var url = '/sports?';
+    if (city) url += 'city=' + encodeURIComponent(city) + '&';
+    if (kw)   url += 'keyword=' + encodeURIComponent(kw) + '&';
+    if (date) url += 'date=' + encodeURIComponent(date) + '&';
+    window.location.href = url.replace(/&$/, '');
+}
+
+function nmSearchConcerts() {
+    var city = document.getElementById('nm-co-city').value.trim();
+    var kw   = document.getElementById('nm-co-kw').value.trim();
+    var date = document.getElementById('nm-co-date').value;
+    if (!city) { alert('Please enter a city.'); return; }
+    var url = '/concerts?';
+    if (city) url += 'city=' + encodeURIComponent(city) + '&';
+    if (kw)   url += 'keyword=' + encodeURIComponent(kw) + '&';
+    if (date) url += 'date=' + encodeURIComponent(date) + '&';
+    window.location.href = url.replace(/&$/, '');
+}
 
 // ── Typewriter effect ───────────────────────────────
 (function() {

@@ -21,6 +21,8 @@
 .ev-sort-btn { border:1.5px solid #ddd; background:#fff; color:#444; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap; }
 .ev-sort-btn:hover { border-color:#c9a84c; color:#c9a84c; }
 .ev-sort-btn.active { background:#0a1628; color:#c9a84c; border-color:#0a1628; }
+.ev-dm-btn { border:1px solid #ddd; background:#fff; color:#777; border-radius:12px; padding:3px 10px; font-size:11px; font-weight:700; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.ev-dm-btn.active { background:#0a1628; color:#c9a84c; border-color:#0a1628; }
 /* Grid & Cards */
 .nm-events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; margin-top:24px; }
 .nm-event-card { background:#fff; border-radius:14px; box-shadow:0 3px 16px rgba(0,0,0,0.08); overflow:hidden; transition:transform .2s,box-shadow .2s; display:flex; flex-direction:column; }
@@ -59,11 +61,23 @@
                                 <label>Artist or Event</label>
                                 <input type="text" name="keyword" class="form-control" placeholder="e.g. Taylor Swift, Beyonce, Hip-Hop..." value="{{ request('keyword') }}">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>City</label>
                                 <input type="text" name="city" class="form-control" placeholder="e.g. New York, Atlanta..." value="{{ request('city') }}">
                             </div>
-                            <div class="col-md-3 d-flex align-items-end">
+                            <div class="col-md-3">
+                                <label><i class="fas fa-calendar me-1"></i>Date</label>
+                                <div style="display:flex;gap:5px;margin-bottom:6px;">
+                                    <button type="button" class="ev-dm-btn {{ !request('date') || strlen(request('date'))==10 ? 'active' : '' }}" onclick="evToggleDM(this,'ev-date-input','date')">Exact Date</button>
+                                    <button type="button" class="ev-dm-btn {{ strlen(request('date'))==7 ? 'active' : '' }}" onclick="evToggleDM(this,'ev-date-input','month')">By Month</button>
+                                </div>
+                                <input id="ev-date-input" name="date"
+                                    type="{{ strlen(request('date'))==7 ? 'month' : 'date' }}"
+                                    class="form-control"
+                                    value="{{ request('date') }}"
+                                    min="{{ strlen(request('date'))==7 ? date('Y-m') : date('Y-m-d') }}">
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
                                 <button type="submit" class="nm-search-btn-gold"><i class="fas fa-search me-1"></i> Search</button>
                             </div>
                         </div>
@@ -192,6 +206,15 @@ function evReset() {
     btns.forEach(function(b){ b.classList.remove('active'); });
     btns[0].classList.add('active');
     evApply();
+}
+
+function evToggleDM(btn, inputId, mode) {
+    var inp = document.getElementById(inputId);
+    inp.value = '';
+    inp.type  = mode;
+    inp.min   = mode === 'month' ? new Date().toISOString().slice(0,7) : new Date().toISOString().slice(0,10);
+    btn.closest('div').querySelectorAll('.ev-dm-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
 }
 
 function evApply() {

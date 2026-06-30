@@ -84,9 +84,10 @@ class TicketNetworkService
                 'categoryId' => 3,
                 'pageSize'   => 40,
             ];
-            if (!empty($params['city']))    $query['city']    = $params['city'];
-            if (!empty($params['keyword'])) $query['keyword'] = $params['keyword'];
-            if (!empty($params['date']))    $query['dateFrom'] = $params['date'];
+            if (!empty($params['city']))      $query['city']     = $params['city'];
+            if (!empty($params['keyword']))   $query['keyword']  = $params['keyword'];
+            if (!empty($params['date_from'])) $query['dateFrom'] = $params['date_from'];
+            if (!empty($params['date_to']))   $query['dateTo']   = $params['date_to'];
 
             $data   = $this->request('/events', $query);
             $events = [];
@@ -106,9 +107,10 @@ class TicketNetworkService
                 'categoryId' => 1,
                 'pageSize'   => 40,
             ];
-            if (!empty($params['city']))    $query['city']    = $params['city'];
-            if (!empty($params['keyword'])) $query['keyword'] = $params['keyword'];
-            if (!empty($params['date']))    $query['dateFrom'] = $params['date'];
+            if (!empty($params['city']))      $query['city']     = $params['city'];
+            if (!empty($params['keyword']))   $query['keyword']  = $params['keyword'];
+            if (!empty($params['date_from'])) $query['dateFrom'] = $params['date_from'];
+            if (!empty($params['date_to']))   $query['dateTo']   = $params['date_to'];
 
             $data   = $this->request('/events', $query);
             $events = [];

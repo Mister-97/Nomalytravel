@@ -13,9 +13,24 @@ class TicketsController extends Controller
         protected TicketNetworkService $ticketNetwork,
     ) {}
 
+    private function parseDateParams(Request $request): array
+    {
+        $params = $request->only('city', 'keyword');
+        $date   = $request->input('date');
+        if ($date && preg_match('/^\d{4}-\d{2}$/', $date)) {
+            $params['date_from']  = $date . '-01';
+            $params['date_to']    = \Carbon\Carbon::parse($date . '-01')->endOfMonth()->toDateString();
+            $params['date_label'] = \Carbon\Carbon::parse($date . '-01')->format('F Y');
+        } elseif ($date) {
+            $params['date_from']  = $date;
+            $params['date_label'] = \Carbon\Carbon::parse($date)->format('M j, Y');
+        }
+        return $params;
+    }
+
     public function sports(Request $request)
     {
-        $params = $request->only('city', 'keyword', 'date');
+        $params = $this->parseDateParams($request);
 
         $tsResult = $this->ticketSqueeze->getSportsEvents($params);
         $tnResult = $this->ticketNetwork->getSportsEvents($params);
@@ -30,7 +45,7 @@ class TicketsController extends Controller
 
     public function concerts(Request $request)
     {
-        $params = $request->only('city', 'keyword', 'date');
+        $params = $this->parseDateParams($request);
 
         $tsResult = $this->ticketSqueeze->getConcertEvents($params);
         $tnResult = $this->ticketNetwork->getConcertEvents($params);

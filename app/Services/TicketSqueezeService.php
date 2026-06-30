@@ -237,6 +237,7 @@ class TicketSqueezeService
         }
 
         $events = $this->enrichImages($this->parseEvents($json, $city, 'sports'), 'sports');
+        $events = $this->filterByDateRange($events, $filters);
         return ['events' => $events, 'error' => null];
     }
 
@@ -255,6 +256,23 @@ class TicketSqueezeService
         }
 
         $events = $this->enrichImages($this->parseEvents($json, $city, 'concerts'), 'concerts');
+        $events = $this->filterByDateRange($events, $filters);
         return ['events' => $events, 'error' => null];
+    }
+
+    protected function filterByDateRange(array $events, array $filters): array
+    {
+        if (empty($filters['date_from'])) return $events;
+        $from = \Carbon\Carbon::parse($filters['date_from'])->startOfDay();
+        $to   = !empty($filters['date_to'])
+            ? \Carbon\Carbon::parse($filters['date_to'])->endOfDay()
+            : null;
+        return array_values(array_filter($events, function ($e) use ($from, $to) {
+            if (empty($e['date'])) return true;
+            try {
+                $d = \Carbon\Carbon::parse($e['date']);
+                return $to ? $d->between($from, $to) : $d->gte($from);
+            } catch (\Exception $ex) { return true; }
+        }));
     }
 }
