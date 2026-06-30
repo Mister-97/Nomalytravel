@@ -67,6 +67,7 @@
             .display-block{
                 display: block;
             }
+            body { overflow-x: hidden; max-width: 100vw; }
         </style>
         
     </head>
@@ -281,7 +282,8 @@ input.parentNode.removeChild(input);
 function show(items){
 dropdown.innerHTML='';
 if(items.length===0){
-dropdown.innerHTML='<div class="nm-no-results">No results found</div>';
+dropdown.style.display='none';
+return;
 }
 items.slice(0,8).forEach(function(item){
 var div=document.createElement('div');
