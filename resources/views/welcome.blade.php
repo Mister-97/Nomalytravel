@@ -545,6 +545,13 @@ body { animation: nm-page-in .5s ease both; }
 .nm-hc-stars { color: var(--gold); font-size: 12px; margin-bottom: 5px; }
 .nm-hc-meta, .nm-ec-meta { font-size: 12px; color: #999; line-height: 1.65; }
 .nm-hc-meta i, .nm-ec-meta i { color: var(--gold); width: 14px; }
+.nm-hf-btn, .nm-hsf-btn {
+  border:1.5px solid #ddd; background:#fff; color:#444; border-radius:20px;
+  padding:4px 12px; font-size:11px; font-weight:600; cursor:pointer; transition:all .15s;
+}
+.nm-hf-btn:hover, .nm-hsf-btn:hover { border-color:#C9A84C; color:#C9A84C; }
+.nm-hf-btn.active { background:#070D1A; color:#C9A84C; border-color:#070D1A; }
+.nm-hsf-btn.active { background:#C9A84C; color:#070D1A; border-color:#C9A84C; }
 .nm-hc-price, .nm-ec-price {
   font-family: 'DM Sans', sans-serif;
   font-size: 14px; font-weight: 700; color: var(--navy); margin-top: auto; padding-top: 10px; letter-spacing: -.2px;
