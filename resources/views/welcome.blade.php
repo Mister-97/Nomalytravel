@@ -2161,7 +2161,9 @@ function nmRenderHotels(hotels, dest, cin, cout, adl) {
         var starS = stars ? ('★').repeat(stars) : '';
         var rate  = h.minRate||h.total_amount||0;
         var nights = Math.max(1, Math.round((new Date(cout) - new Date(cin)) / 86400000));
+        var perNight = nights > 1 ? Math.round(rate / nights) : null;
         var pStr  = rate ? (nights > 1 ? '$'+parseFloat(rate).toFixed(0)+' total' : '$'+parseFloat(rate).toFixed(0)+'/night') : 'Check price';
+        var subStr = (nights > 1 && perNight) ? '$'+perNight+'/night &middot; '+nights+' nights' : '';
         var imgs  = h.images||[];
         var img   = h.image || h.thumbnail || (imgs.length ? imgs[0].path||imgs[0].url||'' : '');
         var addr  = (h.address&&h.address.content)||h.address||'';
@@ -2173,6 +2175,7 @@ function nmRenderHotels(hotels, dest, cin, cout, adl) {
             +(starS?'<div class="nm-hc-stars">'+starS+'</div>':'')
             +(addr?'<div class="nm-hc-meta"><i class="fas fa-map-marker-alt"></i> '+addr+'</div>':'')
             +'<div class="nm-hc-price">'+pStr+'</div>'
+            +(subStr?'<div style="font-size:11px;color:#aaa;margin-top:-6px;margin-bottom:8px;">'+subStr+'</div>':'')
             +(h.source==='duffel'&&h.duffelResultId?'<a href="/stays/'+h.duffelResultId+'/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>':'<a href="/hotels/detail/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>')
             +'</div></div>';
     });
