@@ -67,7 +67,7 @@
             .display-block{
                 display: block;
             }
-            body { overflow-x: hidden; max-width: 100vw; }
+            html, body { overflow-x: hidden; max-width: 100%; }
         </style>
         
     </head>

@@ -57,7 +57,7 @@ body { animation: nm-page-in .5s ease both; }
   background: var(--navy);
   padding: 90px 0 70px;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   min-height: 520px;
   display: flex;
   align-items: center;
