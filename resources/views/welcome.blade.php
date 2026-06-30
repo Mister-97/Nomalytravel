@@ -2176,7 +2176,7 @@ function nmRenderHotels(hotels, dest, cin, cout, adl) {
             +(addr?'<div class="nm-hc-meta"><i class="fas fa-map-marker-alt"></i> '+addr+'</div>':'')
             +'<div class="nm-hc-price">'+pStr+'</div>'
             +(subStr?'<div style="font-size:11px;color:#aaa;margin-top:-6px;margin-bottom:8px;">'+subStr+'</div>':'')
-            +(h.source==='duffel'&&h.duffelResultId?'<a href="/stays/'+h.duffelResultId+'/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>':'<a href="/hotels/detail/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>')
+            +(h.source==='duffel'&&h.hotelId?'<a href="/hotels/stay/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>':'<a href="/hotels/detail/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>')
             +'</div></div>';
     });
     html += '</div>';

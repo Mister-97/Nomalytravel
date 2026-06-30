@@ -93,8 +93,8 @@
                         <div class="ht-card-price">${{ number_format($minRate, 0) }} <span>/ night</span></div>
                         @endif
                         @endif
-                        @if(($hotel['source'] ?? '') === 'duffel' && !empty($hotel['duffelResultId']) && !empty($hotel['hotelId']))
-<a href="{{ route('stays.detail', [$hotel['duffelResultId'], $hotel['hotelId']]) }}?check_in={{ $search['check_in'] }}&check_out={{ $search['check_out'] }}&adults={{ $search['adults'] }}" class="ht-book-btn">View Hotel &amp; Rooms &rarr;</a>
+                        @if(($hotel['source'] ?? '') === 'duffel' && !empty($hotel['hotelId']))
+<a href="{{ route('hotels.duffel.detail', $hotel['hotelId']) }}?check_in={{ $search['check_in'] }}&check_out={{ $search['check_out'] }}&adults={{ $search['adults'] }}" class="ht-book-btn">View Hotel &amp; Rooms &rarr;</a>
 @else
 <a href="{{ route('hotels.detail', $hotelId) }}?check_in={{ $search['check_in'] }}&check_out={{ $search['check_out'] }}&adults={{ $search['adults'] }}" class="ht-book-btn">View Hotel &amp; Rooms &rarr;</a>
 @endif

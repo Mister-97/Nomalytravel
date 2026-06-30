@@ -281,23 +281,45 @@ return response()->json(['hotels' => $hotels]);
         $addr  = $loc['address'] ?? [];
         $photo = $acc['photos'][0]['url'] ?? null;
         $total = isset($r['cheapest_rate_public_amount']) ? (float)$r['cheapest_rate_public_amount'] : null;
+        $accId = $acc['id'] ?? null;
+        // Cache full result so detail page can use it without expired search IDs
+        if ($accId) {
+            \Illuminate\Support\Facades\Cache::put(
+                'duffel_stay:'.$accId.':'.$checkIn.':'.$checkOut,
+                ['result' => $r, 'adults' => $adults],
+                1800
+            );
+        }
         return [
-            'source'         => 'duffel',
-            'hotelId'        => $acc['id'] ?? null,
-            'duffelResultId' => $r['id'] ?? null,
-            'name'           => $acc['name'] ?? 'Hotel',
-            'thumbnail'      => $photo,
-            'image'          => $photo,
-            'stars'          => $acc['rating'] ?? 0,
-            'review_score'   => $acc['review_score'] ?? null,
-            'city'           => $addr['city_name'] ?? '',
-            'country'        => $addr['country_code'] ?? '',
-            'address'        => $addr['line_one'] ?? '',
-            'minRate'        => $total,
-            'check_in'       => $checkIn,
-            'check_out'      => $checkOut,
-            'adults'         => $adults,
+            'source'      => 'duffel',
+            'hotelId'     => $accId,
+            'name'        => $acc['name'] ?? 'Hotel',
+            'thumbnail'   => $photo,
+            'image'       => $photo,
+            'stars'       => $acc['rating'] ?? 0,
+            'review_score'=> $acc['review_score'] ?? null,
+            'city'        => $addr['city_name'] ?? '',
+            'country'     => $addr['country_code'] ?? '',
+            'address'     => $addr['line_one'] ?? '',
+            'minRate'     => $total,
+            'check_in'    => $checkIn,
+            'check_out'   => $checkOut,
+            'adults'      => $adults,
         ];
+    }
+
+    public function duffelDetail(Request $request, string $accommodationId)
+    {
+        $checkIn  = $request->input('check_in', date('Y-m-d', strtotime('+7 days')));
+        $checkOut = $request->input('check_out', date('Y-m-d', strtotime('+14 days')));
+        $adults   = (int)$request->input('adults', 2);
+        $cached   = \Illuminate\Support\Facades\Cache::get('duffel_stay:'.$accommodationId.':'.$checkIn.':'.$checkOut);
+        if (!$cached) {
+            return redirect()->route('hotels.index')->with('error', 'Hotel details expired. Please search again.');
+        }
+        $r   = $cached['result'];
+        $acc = $r['accommodation'] ?? [];
+        return view('hotels.duffel_detail', compact('acc', 'r', 'checkIn', 'checkOut', 'adults'));
     }
 
     private function mergeDuffel(array &$hotels, string $city, string $checkIn, string $checkOut, int $adults): void

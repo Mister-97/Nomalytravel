@@ -643,6 +643,7 @@ Route::get('/concerts', [App\Http\Controllers\TicketsController::class, 'concert
 // Hotels (must be before wildcard slug/module routes)
 Route::get("/hotels", [App\Http\Controllers\HotelController::class, "index"])->name("hotels.index");
 Route::post("/hotels/search", [App\Http\Controllers\HotelController::class, "search"])->name("hotels.search");
+Route::get("/hotels/stay/{accommodationId}", [App\Http\Controllers\HotelController::class, "duffelDetail"])->name("hotels.duffel.detail");
 Route::get("/hotels/detail/{hotelId}", [App\Http\Controllers\HotelController::class, "detail"])->name("hotels.detail");
 Route::post("/hotels/prebook", [App\Http\Controllers\HotelController::class, "prebook"])->name("hotels.prebook");
 Route::post("/hotels/book", [App\Http\Controllers\HotelController::class, "book"])->name("hotels.book");
