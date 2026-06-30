@@ -57,7 +57,7 @@ body { animation: nm-page-in .5s ease both; }
   background: var(--navy);
   padding: 90px 0 70px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   min-height: 520px;
   display: flex;
   align-items: center;
@@ -176,6 +176,7 @@ body { animation: nm-page-in .5s ease both; }
   box-shadow: var(--shadow-xl);
   overflow: visible;
   position: relative;
+  z-index: 100;
   border: 1px solid rgba(255,255,255,.08);
 }
 
@@ -478,6 +479,25 @@ body { animation: nm-page-in .5s ease both; }
   background: var(--navy); color: var(--gold); border-color: var(--navy);
 }
 
+/* ── Airport filter pills ───────────────────────────────────────── */
+.nm-apt-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:16px; width:100%; }
+.nm-apt-bar span { font-size:12px; color:#999; font-family:'DM Sans',sans-serif; }
+.nm-apt-pill {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 5px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 600; cursor: pointer; color: #666;
+  transition: all .15s; display:flex; align-items:center; gap:5px;
+}
+.nm-apt-pill .nm-apt-count {
+  background: #eef0f5; border-radius: 10px; padding: 1px 7px;
+  font-size: 11px; font-weight: 700; color: #666;
+}
+.nm-apt-pill.active, .nm-apt-pill:hover {
+  background: #0e1d36; color: var(--gold); border-color: #0e1d36;
+}
+.nm-apt-pill.active .nm-apt-count { background:rgba(201,168,76,.2); color:var(--gold); }
+
 /* ── Flight cards ───────────────────────────────────────────────── */
 .nm-fc { background:#ffffff; border:1.5px solid #d0d0d0; border-radius:16px; margin:0 0 8px 0; padding:12px 14px; box-shadow:0 3px 12px rgba(0,0,0,0.09); cursor:pointer; animation:nm-fade-in .3s ease both; }
 .nm-fc:hover { background:#f8f9fa; }
@@ -762,6 +782,16 @@ body { animation: nm-page-in .5s ease both; }
                     <button type="button" class="nm-step-btn" onclick="nmStep('nm-adults',-1)">&#8722;</button>
                     <input type="number" id="nm-adults" value="1" min="1" max="9" readonly>
                     <button type="button" class="nm-step-btn" onclick="nmStep('nm-adults',1)">+</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="nm-gf-field" style="align-items:center;text-align:center;">
+                  <label>Children <small style="font-size:10px;color:var(--text-muted)">(under 12)</small></label>
+                  <div class="nm-stepper">
+                    <button type="button" class="nm-step-btn" onclick="nmStep('nm-youth',-1)">&#8722;</button>
+                    <input type="number" id="nm-youth" value="0" min="0" max="9" readonly>
+                    <button type="button" class="nm-step-btn" onclick="nmStep('nm-youth',1)">+</button>
                   </div>
                 </div>
               </div>
@@ -1311,8 +1341,10 @@ window.NM_AIRPORTS_STUB = [
 function nmStep(id, delta) {
     var el = document.getElementById(id);
     if (!el) return;
-    var v = parseInt(el.value||1) + delta;
-    el.value = Math.min(9, Math.max(1, v));
+    var minVal = parseInt(el.getAttribute('min') ?? '1', 10);
+    var maxVal = parseInt(el.getAttribute('max') ?? '9', 10);
+    var v = parseInt(el.value || minVal) + delta;
+    el.value = Math.min(maxVal, Math.max(minVal, v));
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1391,18 +1423,59 @@ function nmACRender(dropEl, items) {
         dropEl.classList.add('open');
         return;
     }
-    var html = '';
-    var aptIdx = 0;
+
+    // Group items into city buckets preserving order
+    var groups = [];
     items.forEach(function(r) {
         if (r.type === 'city') {
+            groups.push({ city: r, airports: [] });
+        } else {
+            if (groups.length) {
+                groups[groups.length - 1].airports.push(r);
+            } else {
+                groups.push({ city: null, airports: [r] });
+            }
+        }
+    });
+
+    var html = '';
+    var aptIdx = 0;
+
+    groups.forEach(function(g) {
+        if (g.city) {
+            // Non-clickable city header label
             html += '<div class="nm-ac-item nm-ac-item-city" style="pointer-events:none;opacity:0.7;padding:7px 16px 4px;">'
                  + '<span class="nm-ac-icon nm-ac-icon-city"><i class="fas fa-map-marker-alt"></i></span>'
                  + '<span class="nm-ac-text"><div class="nm-ac-name" style="font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;">'
-                 + nmEsc(r.name) + (r.country ? ' &mdash; ' + nmEsc(r.country) : '')
+                 + nmEsc(g.city.name) + (g.city.country ? ' &mdash; ' + nmEsc(g.city.country) : '')
                  + '</div></span></div>';
-        } else {
+
+            // Only include airports that actually belong to this city (prevents
+            // unrelated airports like CNX/Chiang Mai from slipping into Chicago's group)
+            var cityName = (g.city.name || '').toLowerCase();
+            var matchedApts = g.airports.filter(function(a) {
+                return (a.city || '').toLowerCase() === cityName;
+            }).slice(0, 2); // cap at 2 per city — max 4 parallel API calls (2×2)
+
+            // "All Airports" row only when 2+ verified airports exist
+            if (matchedApts.length > 1) {
+                var allCodes = matchedApts.map(function(a){ return a.code; }).join(',');
+                var codeList = matchedApts.map(function(a){ return a.code; }).join(', ');
+                var allLabel = g.city.name + ' — All Airports (' + codeList + ')';
+                html += '<div class="nm-ac-item nm-ac-item-all" data-code="' + allCodes + '" data-label="' + allLabel.replace(/"/g,'&quot;') + '" data-idx="' + aptIdx + '" style="background:linear-gradient(90deg,rgba(201,168,76,.08),transparent);border-left:3px solid var(--gold);">'
+                     + '<span class="nm-ac-icon nm-ac-icon-apt" style="font-size:16px;">✈️</span>'
+                     + '<span class="nm-ac-text">'
+                     + '<div class="nm-ac-name" style="font-weight:700;">All Airports &mdash; ' + nmEsc(g.city.name) + '</div>'
+                     + '<div class="nm-ac-sub">' + nmEsc(codeList) + '</div>'
+                     + '</span>'
+                     + '<span class="nm-ac-code" style="font-size:10px;letter-spacing:.5px;">ALL</span>'
+                     + '</div>';
+                aptIdx++;
+            }
+        }
+
+        g.airports.forEach(function(r) {
             var flag = nmGetFlag(r.country);
-            var label = nmEsc(r.city) + ' (' + r.code + ')';
             html += '<div class="nm-ac-item" data-code="' + r.code + '" data-label="' + r.city.replace(/"/g,'&quot;') + ' (' + r.code + ')" data-idx="' + aptIdx + '">'
                  + '<span class="nm-ac-icon nm-ac-icon-apt">' + flag + '</span>'
                  + '<span class="nm-ac-text">'
@@ -1412,8 +1485,9 @@ function nmACRender(dropEl, items) {
                  + '<span class="nm-ac-code">' + r.code + '</span>'
                  + '</div>';
             aptIdx++;
-        }
+        });
     });
+
     dropEl.innerHTML = html;
     dropEl.classList.add('open');
 }
@@ -1584,9 +1658,12 @@ function nmSearchFlights(overrideDate) {
 
     var from   = (fromCode && fromCode.value) || nmIATA(fromEl ? fromEl.value : '');
     var to     = (toCode && toCode.value)     || nmIATA(toEl ? toEl.value : '');
+    var fromLabel = (fromEl && fromEl.value) || from;
+    var toLabel   = (toEl   && toEl.value)   || to;
     var depart = overrideDate || (document.getElementById('nm-depart') ? document.getElementById('nm-depart').value : '');
     var ret    = document.getElementById('nm-return') ? document.getElementById('nm-return').value : '';
     var adults = document.getElementById('nm-adults') ? document.getElementById('nm-adults').value : '1';
+    var youth  = document.getElementById('nm-youth')  ? document.getElementById('nm-youth').value  : '0';
     var cabin  = document.getElementById('nm-cabin')  ? document.getElementById('nm-cabin').value  : 'economy';
     var tripEl = document.querySelector('input[name="nm_trip"]:checked');
     var trip   = tripEl ? tripEl.value : 'oneway';
@@ -1608,27 +1685,44 @@ function nmSearchFlights(overrideDate) {
         return;
     }
 
-    window._nmCtx = {from:from, to:to, depart:depart, adults:adults, cabin:cabin, trip:trip};
-    nmLoading('Searching all airlines: ' + from + ' &rarr; ' + to + ' &hellip;');
+    window._nmCtx = {from:from, to:to, fromLabel:fromLabel, toLabel:toLabel, depart:depart, adults:adults, youth:youth, cabin:cabin, trip:trip};
+    nmLoading('Searching all airlines: ' + nmEsc(fromLabel) + ' &rarr; ' + nmEsc(toLabel) + ' &hellip;');
 
-    var qs = 'slices[0][from]='+encodeURIComponent(from)
-           + '&slices[0][to]='+encodeURIComponent(to)
-           + '&slices[0][departure_date]='+encodeURIComponent(depart)
-           + '&adults='+encodeURIComponent(adults)
-           + '&cabin_class='+encodeURIComponent(cabin)
-           + '&triptype='+encodeURIComponent(trip);
-    if (trip==='twoway' && ret) qs += '&return_date='+encodeURIComponent(ret);
+    // Split into individual codes (multi-airport support: "ORD,MDW")
+    var fromCodes = from.split(',').map(function(c){ return c.trim(); }).filter(Boolean);
+    var toCodes   = to.split(',').map(function(c){ return c.trim(); }).filter(Boolean);
 
-    fetch('/api/home/flights?'+qs, {headers:{'X-Requested-With':'XMLHttpRequest'}})
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-        if (data && data.error) {
-            nmError(data.error || 'No flights available. Try a new destination or different dates.');
-            return;
-        }
-        var offers = Array.isArray(data) ? data : (data.offers || data.data || []);
+    // Build all from/to pairs and fetch in parallel
+    var searches = [];
+    fromCodes.forEach(function(f) {
+        toCodes.forEach(function(t) {
+            searches.push({from: f, to: t});
+        });
+    });
+
+    var paxSuffix = '&adults='+encodeURIComponent(adults)
+        + (parseInt(youth)>0 ? '&youth='+encodeURIComponent(youth) : '')
+        + '&cabin_class='+encodeURIComponent(cabin)
+        + '&triptype='+encodeURIComponent(trip);
+    if (trip==='twoway' && ret) paxSuffix += '&return_date='+encodeURIComponent(ret);
+
+    Promise.all(searches.map(function(s) {
+        var qs = 'slices[0][from]='+encodeURIComponent(s.from)
+               + '&slices[0][to]='+encodeURIComponent(s.to)
+               + '&slices[0][departure_date]='+encodeURIComponent(depart)
+               + paxSuffix;
+        return fetch('/api/home/flights?'+qs, {headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+                if (data && data.error) return [];
+                return Array.isArray(data) ? data : (data.offers || data.data || []);
+            })
+            .catch(function(){ return []; });
+    }))
+    .then(function(allArrays){
+        var offers = [].concat.apply([], allArrays);
         window._nmOffers = offers;
-        nmRenderFlights(offers, from, to, depart);
+        nmRenderFlights(offers, fromLabel, toLabel, depart);
     })
     .catch(function(e){
         nmError('No flights available. Try a new destination or different dates.');
@@ -1664,6 +1758,10 @@ function nmSortPriority(a, b) {
     return parseFloat(a.total_amount||9999) - parseFloat(b.total_amount||9999);
 }
 
+function nmGetDepCode(offer) {
+    try { return offer.slices[0].segments[0].origin.iata_code || ''; } catch(e){ return ''; }
+}
+
 function nmRenderFlights(offers, from, to, depart) {
     if (!offers || offers.length === 0) {
         nmNone('No flights available for <strong>'+from+' &rarr; '+to+'</strong> on '+nmFmtDate(depart)+'. Try a new destination or different dates.');
@@ -1671,6 +1769,16 @@ function nmRenderFlights(offers, from, to, depart) {
     }
     // Default sort: cheapest first
     var sorted = offers.slice().sort(function(a,b){ return parseFloat(a.total_amount||9999)-parseFloat(b.total_amount||9999); });
+    window._nmAllOffers = sorted;
+    window._nmActiveApt = 'all';
+
+    // Count unique departure airports
+    var aptCounts = {};
+    sorted.forEach(function(o) {
+        var code = nmGetDepCode(o);
+        if (code) aptCounts[code] = (aptCounts[code] || 0) + 1;
+    });
+    var aptCodes = Object.keys(aptCounts);
 
     // Count unique airlines
     var airlines = {};
@@ -1694,7 +1802,28 @@ function nmRenderFlights(offers, from, to, depart) {
         + '<button type="button" class="nm-sort-btn active" onclick="nmSortFlights(\'price\',this)">Cheapest</button>'
         + '<button type="button" class="nm-sort-btn" onclick="nmSortFlights(\'dur\',this)">Shortest</button>'
         + '<button type="button" class="nm-sort-btn" onclick="nmSortFlights(\'stops\',this)">Nonstop first</button>'
-        + '</div></div></div>';
+        + '</div></div>';
+
+    html += '</div>'; // close nm-results-hdr
+
+    // Airport filter pills — between header and price calendar
+    var searchedCodes = window._nmCtx && window._nmCtx.from
+        ? window._nmCtx.from.split(',').map(function(c){ return c.trim(); }).filter(Boolean)
+        : [];
+    var showPills = aptCodes.length > 1 || searchedCodes.length > 1;
+    if (showPills) {
+        var pillCodes = searchedCodes.length > 1 ? searchedCodes : aptCodes;
+        html += '<div class="nm-apt-bar"><span>Airport:</span>'
+            + '<button type="button" class="nm-apt-pill active" onclick="nmFilterAirport(\'all\',this)">'
+            + 'All <span class="nm-apt-count">' + sorted.length + '</span></button>';
+        pillCodes.forEach(function(code) {
+            var count = aptCounts[code] || 0;
+            var disabled = count === 0 ? ' style="opacity:.45;cursor:default;"' : '';
+            html += '<button type="button" class="nm-apt-pill" onclick="nmFilterAirport(\'' + code + '\',this)"' + disabled + '>'
+                + code + ' <span class="nm-apt-count">' + count + '</span></button>';
+        });
+        html += '</div>';
+    }
 
     // Price calendar strip
     html += nmBuildPriceCalendar(from, to, depart);
@@ -1708,6 +1837,19 @@ function nmRenderFlights(offers, from, to, depart) {
 
     // Fetch nearby date prices after render
     setTimeout(function(){ nmFetchNearbyPrices(from, to, depart); }, 600);
+}
+
+function nmFilterAirport(code, btn) {
+    window._nmActiveApt = code;
+    // Update pill active state
+    document.querySelectorAll('.nm-apt-pill').forEach(function(el){ el.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+
+    var all = window._nmAllOffers || window._nmOffers || [];
+    var filtered = code === 'all' ? all : all.filter(function(o){ return nmGetDepCode(o) === code; });
+
+    var list = document.getElementById('nm-fl-list');
+    if (list) nmRenderGrouped(filtered, list);
 }
 
 // ── Price calendar ─────────────────────────────────
@@ -1920,7 +2062,10 @@ function nmRenderTPFlights(from, to, depart) {
 function nmSortFlights(by, btn) {
     document.querySelectorAll('.nm-sort-btn').forEach(function(b){b.classList.remove('active');});
     if (btn) btn.classList.add('active');
-    var s = (window._nmOffers || []).slice();
+    // Sort from the full set, then re-apply active airport filter
+    var all = (window._nmAllOffers || window._nmOffers || []).slice();
+    var aptFilter = window._nmActiveApt || 'all';
+    var s = aptFilter === 'all' ? all : all.filter(function(o){ return nmGetDepCode(o) === aptFilter; });
     if (by === 'us' || by === 'price') {
         // 'us' = US airlines first then by price; 'price' = pure cheapest first
         if (by === 'us') {
@@ -2027,7 +2172,7 @@ function nmRenderHotels(hotels, dest, cin, cout, adl) {
             +(starS?'<div class="nm-hc-stars">'+starS+'</div>':'')
             +(addr?'<div class="nm-hc-meta"><i class="fas fa-map-marker-alt"></i> '+addr+'</div>':'')
             +'<div class="nm-hc-price">'+pStr+'</div>'
-            +'<a href="/hotels/detail/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>'
+            +(h.source==='duffel'&&h.duffelResultId?'<a href="/stays/'+h.duffelResultId+'/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>':'<a href="/hotels/detail/'+h.hotelId+'?check_in='+cin+'&check_out='+cout+'&adults='+(adl||2)+'" class="nm-hc-btn">View &amp; Book</a>')
             +'</div></div>';
     });
     html += '</div>';

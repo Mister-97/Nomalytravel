@@ -19,6 +19,7 @@
 .ht-card-stars { color:#C9A84C; font-size:12px; margin-bottom:8px; }
 .ht-card-price { font-size:22px; font-weight:900; color:#070D1A; margin-bottom:12px; }
 .ht-card-price span { font-size:11px; font-weight:400; color:#999; }
+.ht-card-total { font-size:11px; color:#aaa; margin-top:-8px; margin-bottom:10px; }
 .ht-book-btn { display:block; margin-top:auto; background:#070D1A; color:#C9A84C; border-radius:9px; padding:9px; text-align:center; font-size:13px; font-weight:700; border:2px solid #C9A84C; cursor:pointer; text-decoration:none; transition:all .2s; }
 .ht-book-btn:hover { background:#C9A84C; color:#070D1A; }
 .ht-empty { text-align:center; padding:60px 20px; color:#888; }
@@ -47,21 +48,25 @@
             </div>
         @else
             <p class="text-muted mb-3" style="font-size:13px;">{{ count($hotels) }} propert{{ count($hotels)==1?'y':'ies' }} found</p>
+            @php
+                $nights = max(1, \Carbon\Carbon::parse($search['check_in'])->diffInDays(\Carbon\Carbon::parse($search['check_out'])));
+            @endphp
             <div class="ht-grid">
                 @foreach($hotels as $hotel)
                 @php
-                    $name     = $hotel['name'] ?? ($hotel['hotelName'] ?? 'Hotel');
-                    $hotelId  = $hotel['hotelId'] ?? ($hotel['id'] ?? '');
-                    $city     = $hotel['city'] ?? ($hotel['address']['city'] ?? '');
-                    $country  = $hotel['country'] ?? ($hotel['address']['country'] ?? '');
-                    $stars    = $hotel['starRating'] ?? ($hotel['stars'] ?? 0);
-                    $img      = $hotel['thumbnail'] ?? ($hotel['image'] ?? null);
-                    $minRate  = $hotel['minRate'] ?? null;
-                    if (!$minRate && !empty($hotel['roomTypes'])) {
-                        $minRate = collect($hotel['roomTypes'])->min('rates.0.retailRate.total.0.amount')
-                                ?? collect($hotel['roomTypes'])->min('minRate');
+                    $name      = $hotel['name'] ?? ($hotel['hotelName'] ?? 'Hotel');
+                    $hotelId   = $hotel['hotelId'] ?? ($hotel['id'] ?? '');
+                    $city      = $hotel['city'] ?? ($hotel['address']['city'] ?? '');
+                    $country   = $hotel['country'] ?? ($hotel['address']['country'] ?? '');
+                    $stars     = $hotel['starRating'] ?? ($hotel['stars'] ?? 0);
+                    $img       = $hotel['thumbnail'] ?? ($hotel['image'] ?? null);
+                    $totalRate = $hotel['minRate'] ?? null;
+                    if (!$totalRate && !empty($hotel['roomTypes'])) {
+                        $totalRate = collect($hotel['roomTypes'])->min('rates.0.retailRate.total.0.amount')
+                                  ?? collect($hotel['roomTypes'])->min('minRate');
                     }
-                    $offerId  = $hotel['offerId'] ?? ($hotel['roomTypes'][0]['offerId'] ?? null);
+                    $minRate   = $totalRate ? round($totalRate / $nights, 2) : null;
+                    $offerId   = $hotel['offerId'] ?? ($hotel['roomTypes'][0]['offerId'] ?? null);
                 @endphp
                 <div class="ht-card">
                     @if($img)
@@ -82,8 +87,15 @@
                         @endif
                         @if($minRate)
                         <div class="ht-card-price">${{ number_format($minRate, 0) }} <span>/ night</span></div>
+                        @if($totalRate)
+                        <div class="ht-card-total">${{ number_format($totalRate, 0) }} total &bull; {{ $nights }} night{{ $nights > 1 ? "s" : "" }}</div>
                         @endif
-                        <a href="{{ route('hotels.detail', $hotelId) }}?check_in={{ $search['check_in'] }}&check_out={{ $search['check_out'] }}&adults={{ $search['adults'] }}" class="ht-book-btn">View Hotel &amp; Rooms &rarr;</a>
+                        @endif
+                        @if(($hotel['source'] ?? '') === 'duffel' && !empty($hotel['duffelResultId']) && !empty($hotel['hotelId']))
+<a href="{{ route('stays.detail', [$hotel['duffelResultId'], $hotel['hotelId']]) }}?check_in={{ $search['check_in'] }}&check_out={{ $search['check_out'] }}&adults={{ $search['adults'] }}" class="ht-book-btn">View Hotel &amp; Rooms &rarr;</a>
+@else
+<a href="{{ route('hotels.detail', $hotelId) }}?check_in={{ $search['check_in'] }}&check_out={{ $search['check_out'] }}&adults={{ $search['adults'] }}" class="ht-book-btn">View Hotel &amp; Rooms &rarr;</a>
+@endif
                     </div>
                 </div>
                 @endforeach

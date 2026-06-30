@@ -6,14 +6,17 @@ use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use App\Services\LiteApiService;
+use App\Services\DuffelStaysService;
 
 class HotelController extends Controller
 {
 protected $liteApi;
+private DuffelStaysService $duffelStays;
 
-public function __construct(LiteApiService $liteApi)
+public function __construct(LiteApiService $liteApi, DuffelStaysService $duffelStays)
 {
-$this->liteApi = $liteApi;
+    $this->liteApi = $liteApi;
+    $this->duffelStays = $duffelStays;
 }
 
 public function index()
@@ -47,6 +50,10 @@ foreach ($results['data'] ?? [] as $h) {
         'offerId'   => $roomType['offerId'] ?? null,
     ]);
 }
+foreach ($hotels as &$h) { $h['source'] = $h['source'] ?? 'liteapi'; }
+unset($h);
+$this->mergeDuffel($hotels, $city, $request->check_in, $request->check_out, (int)($request->adults ?? 2));
+usort($hotels, fn($a,$b) => ($a['minRate'] ?? PHP_INT_MAX) <=> ($b['minRate'] ?? PHP_INT_MAX));
 return view('hotels.results', [
 'hotels' => $hotels,
 'search' => $request->all(),
@@ -90,6 +97,9 @@ $hotels[] = [
 'rateId' => $rate['rateId'] ?? '',
 ];
 }
+$checkIn2 = $request->input('checkin',''); $checkOut2 = $request->input('checkout','');
+if ($checkIn2 && $checkOut2) $this->mergeDuffel($hotels, $city, $checkIn2, $checkOut2, (int)$adults);
+usort($hotels, fn($a,$b) => ($a['minRate'] ?? PHP_INT_MAX) <=> ($b['minRate'] ?? PHP_INT_MAX));
 return response()->json(['hotels' => $hotels]);
 }
 
@@ -139,6 +149,8 @@ return response()->json(['hotels' => $hotels]);
                 'minRate'   => $rate['retailRate']['total'][0]['amount'] ?? null,
             ];
         }
+        $this->mergeDuffel($hotels, $city, $request->check_in, $request->check_out, (int)($request->adults ?? 2));
+        usort($hotels, fn($a,$b) => ($a['minRate'] ?? PHP_INT_MAX) <=> ($b['minRate'] ?? PHP_INT_MAX));
         return response()->json(['hotels' => $hotels]);
     }
 
@@ -243,6 +255,64 @@ return response()->json(['hotels' => $hotels]);
             \Illuminate\Support\Facades\Log::error('Hotel book error: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
+    }
+
+
+    private function geocodeCity(string $city): ?array
+    {
+        try {
+            $resp = \Illuminate\Support\Facades\Http::withHeaders(['User-Agent' => 'NomalyTravel/1.0'])
+                ->timeout(5)
+                ->get('https://nominatim.openstreetmap.org/search', ['q' => $city, 'format' => 'json', 'limit' => 1]);
+            $data = $resp->json();
+            if (!empty($data[0])) {
+                return ['latitude' => (float)$data[0]['lat'], 'longitude' => (float)$data[0]['lon']];
+            }
+        } catch (\Exception $e) {}
+        return null;
+    }
+
+    private function normalizeDuffelResult(array $r, string $checkIn, string $checkOut, int $adults): array
+    {
+        $acc   = $r['accommodation'] ?? [];
+        $loc   = $acc['location'] ?? [];
+        $addr  = $loc['address'] ?? [];
+        $photo = $acc['photos'][0]['url'] ?? null;
+        $total = isset($r['cheapest_rate_public_amount']) ? (float)$r['cheapest_rate_public_amount'] : null;
+        return [
+            'source'         => 'duffel',
+            'hotelId'        => $acc['id'] ?? null,
+            'duffelResultId' => $r['id'] ?? null,
+            'name'           => $acc['name'] ?? 'Hotel',
+            'thumbnail'      => $photo,
+            'image'          => $photo,
+            'stars'          => $acc['rating'] ?? 0,
+            'review_score'   => $acc['review_score'] ?? null,
+            'city'           => $addr['city_name'] ?? '',
+            'country'        => $addr['country_code'] ?? '',
+            'address'        => $addr['line_one'] ?? '',
+            'minRate'        => $total,
+            'check_in'       => $checkIn,
+            'check_out'      => $checkOut,
+            'adults'         => $adults,
+        ];
+    }
+
+    private function mergeDuffel(array &$hotels, string $city, string $checkIn, string $checkOut, int $adults): void
+    {
+        $coords = $this->geocodeCity($city);
+        if (!$coords) return;
+        try {
+            $resp = $this->duffelStays->searchAccommodations(array_merge($coords, [
+                'check_in_date'  => $checkIn,
+                'check_out_date' => $checkOut,
+                'rooms'          => 1,
+                'adults'         => $adults,
+            ]));
+            foreach ($resp['data']['results'] ?? [] as $r) {
+                $hotels[] = $this->normalizeDuffelResult($r, $checkIn, $checkOut, $adults);
+            }
+        } catch (\Exception $e) {}
     }
 
 }
