@@ -1,7 +1,9 @@
 <?php 
 
 // Include TranslationHelper functions
-require_once __DIR__ . '/TranslationHelper.php';
+if (!class_exists('App\\Helpers\\TranslationHelper')) {
+    require_once __DIR__ . '/TranslationHelper.php';
+}
 
 // Fallback menu translation function
 if (!function_exists('translate_menu')) {

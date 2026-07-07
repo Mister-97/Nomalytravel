@@ -24,25 +24,95 @@
 .ev-dm-btn { border:1px solid #ddd; background:#fff; color:#777; border-radius:12px; padding:3px 10px; font-size:11px; font-weight:700; cursor:pointer; transition:all .15s; white-space:nowrap; }
 .ev-dm-btn.active { background:#0a1628; color:#c9a84c; border-color:#0a1628; }
 /* Grid & Cards */
-.nm-events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; margin-top:24px; }
-.nm-event-card { background:#fff; border-radius:14px; box-shadow:0 3px 16px rgba(0,0,0,0.08); overflow:hidden; transition:transform .2s,box-shadow .2s; display:flex; flex-direction:column; }
-.nm-event-card:hover { transform:translateY(-4px); box-shadow:0 10px 32px rgba(0,0,0,0.14); }
-.nm-event-img-placeholder { width:100%; height:200px; background:linear-gradient(135deg,#0a1628,#4a0080); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.4); font-size:2.5rem; }
-.nm-event-body { padding:16px; flex:1; display:flex; flex-direction:column; }
-.nm-event-cat { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#c9a84c; margin-bottom:6px; }
-.nm-event-title { font-size:16px; font-weight:800; color:#0a1628; margin-bottom:8px; line-height:1.3; }
-.nm-event-meta { font-size:12px; color:#888; line-height:1.7; }
-.nm-event-meta i { color:#c9a84c; width:16px; }
-.nm-event-price { font-size:18px; font-weight:900; color:#0a1628; margin-top:auto; padding-top:10px; }
-.nm-event-price span { font-size:11px; color:#999; }
-.nm-book-ticket { display:block; margin-top:12px; background:#0a1628; color:#c9a84c; border-radius:9px; padding:10px 0; text-align:center; font-size:13px; font-weight:700; text-decoration:none; transition:all .2s; border:2px solid #c9a84c; }
+/* StubHub-style slim list rows — one compact row per event, no per-event image */
+.nm-events-grid { display:flex; flex-direction:column; gap:14px; margin-top:24px; }
+.nm-event-card { background:#fff; border-radius:10px; border:1.5px solid rgba(201,168,76,.32); box-shadow:0 1px 6px rgba(0,0,0,0.06); overflow:hidden; transition:box-shadow .2s,border-color .2s; display:flex; flex-direction:row; align-items:center; min-height:0; }
+.nm-event-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.1); border-color:#c9a84c; }
+.nm-event-card > img, .nm-event-card > .nm-event-img-placeholder { display:none; }
+.nm-event-datebox { display:flex; flex-direction:column; align-items:center; justify-content:center; width:56px; flex-shrink:0; align-self:stretch; background:#f7f8fc; border-right:1px solid #eee; padding:8px 4px; text-align:center; }
+.nm-event-datebox .mon { font-size:9px; font-weight:800; text-transform:uppercase; color:#c9a84c; letter-spacing:.5px; }
+.nm-event-datebox .day { font-size:18px; font-weight:900; color:#0a1628; line-height:1.1; }
+.nm-event-datebox .wd { font-size:9px; color:#999; font-weight:600; }
+.nm-ev-badges { display:inline-flex; flex-wrap:wrap; gap:5px; }
+.nm-ev-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; }
+.nm-ev-badge.week { background:#eef1f8; color:#4a5578; }
+.nm-ev-badge.hot { background:#fdeaea; color:#d64545; }
+.nm-event-body { padding:10px 14px; flex:1; min-width:0; }
+.nm-event-cat { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:#c9a84c; margin-bottom:2px; }
+.nm-event-title { font-size:14px; font-weight:800; color:#0a1628; margin-bottom:2px; line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nm-event-meta { font-size:11.5px; color:#888; display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; }
+.nm-event-meta span { display:inline-flex; align-items:center; gap:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:220px; }
+.nm-event-meta i { color:#c9a84c; font-size:10px; }
+.nm-event-action { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:4px; padding:10px 14px; flex-shrink:0; }
+.nm-event-price { font-size:13px; font-weight:800; color:#0a1628; white-space:nowrap; }
+.nm-event-price span { font-size:10px; font-weight:400; color:#999; }
+.nm-book-ticket { display:inline-block; background:#0a1628; color:#c9a84c; border-radius:7px; padding:6px 14px; text-align:center; font-size:11.5px; font-weight:700; text-decoration:none; transition:all .2s; border:1.5px solid #c9a84c; white-space:nowrap; }
 .nm-book-ticket:hover { background:#c9a84c; color:#0a1628; }
+@media(max-width:768px){
+    .nm-events-grid { gap:6px; margin-top:16px; }
+    .nm-event-card { align-items:stretch; }
+    .nm-event-body { padding:8px 10px; }
+    .nm-event-action { padding:8px 10px 8px 0; }
+    .nm-event-title { font-size:13px; }
+    .nm-event-meta { font-size:10.5px; }
+    .nm-event-meta span { max-width:130px; }
+    .nm-book-ticket { padding:6px 10px; font-size:11px; }
+}
 .nm-cat-tabs { display:flex; gap:8px; flex-wrap:wrap; margin:20px 0 8px; }
 .nm-cat-tab { padding:7px 16px; border-radius:25px; border:1.5px solid #dde2ec; background:#fff; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; text-decoration:none; color:#555; display:inline-flex; align-items:center; gap:5px; }
 .nm-cat-tab.active, .nm-cat-tab:hover { background:#0a1628; color:#c9a84c; border-color:#0a1628; }
+.nm-suggest-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; margin-top:16px; }
+.nm-suggest-chip { display:flex; align-items:center; gap:10px; background:#fff; border:1.5px solid #eee; border-radius:12px; padding:8px 12px; text-decoration:none; transition:all .15s; }
+.nm-suggest-chip:hover { border-color:#c9a84c; box-shadow:0 3px 10px rgba(0,0,0,0.06); }
+.nm-suggest-chip img { width:40px; height:40px; border-radius:8px; object-fit:cover; flex-shrink:0; background:#f0f2f6; }
+.nm-suggest-info { display:flex; flex-direction:column; min-width:0; }
+.nm-suggest-info strong { font-size:13px; color:#0a1628; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nm-suggest-info small { font-size:11px; color:#999; }
+@media(max-width:768px){ .nm-suggest-row { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; } }
+/* Two-column layout: results on the left, sidebar on the right instead of dead space */
+.nm-results-layout { display:flex; gap:24px; align-items:flex-start; margin-top:8px; }
+.nm-results-main { flex:1; min-width:0; }
+.nm-results-sidebar { width:300px; flex-shrink:0; position:sticky; top:70px; }
+.nm-suggest-col { display:flex; flex-direction:column; gap:10px; }
+.nm-suggest-col .nm-suggest-chip { padding:10px 12px; }
+.nm-suggest-col .nm-suggest-chip img { width:48px; height:48px; }
+.nm-sidebar-title { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#8b94a5; margin-bottom:12px; }
+.nm-sidebar-hero { border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1.5px solid rgba(201,168,76,.32); }
+.nm-sidebar-hero img { width:100%; height:200px; object-fit:cover; display:block; }
+.nm-sidebar-hero-body { padding:16px; background:#fff; }
+.nm-sidebar-hero-body p { font-size:13px; color:#666; line-height:1.6; margin:0; }
+@media(max-width:992px){ .nm-results-sidebar { display:none; } }
 .ev-source-badge { display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:2px 6px; border-radius:4px; margin-left:6px; vertical-align:middle; }
 .ev-source-tn { background:#fef9e7; color:#b7791f; }
 @media(max-width:600px){ .ev-toolbar-inner { flex-direction:column; align-items:flex-start; } }
+
+/* Homepage-style field cards for the ticket search */
+.evgf-row { display:flex; gap:10px; align-items:stretch; flex-wrap:wrap; }
+.evgf-field { flex:1 1 170px; border:1.5px solid #e3e8f2; border-radius:12px; padding:10px 16px; background:#fff; min-height:64px; display:flex; flex-direction:column; justify-content:center; transition:border-color .2s, box-shadow .2s; cursor:text; }
+.evgf-field:hover { border-color:#c8d4e8; }
+.evgf-field:focus-within { border-color:#c9a84c; box-shadow:0 0 0 3px rgba(201,168,76,.12); }
+.evgf-field > label, .evgf-labelrow label { display:block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#8b94a5; margin-bottom:4px; }
+.evgf-field label i { color:#c9a84c; margin-right:4px; font-size:9px; }
+.evgf-labelrow { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px; }
+.evgf-labelrow label { margin-bottom:0; }
+.evgf-field input, .evgf-field select { width:100%; border:none; outline:none; font-size:15px; font-weight:600; color:#0a1628; background:transparent; padding:0; -webkit-appearance:none; appearance:none; }
+.evgf-field select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 4px center; padding-right:20px; cursor:pointer; }
+.evgf-field input::placeholder { color:#bcc5d3; font-weight:400; font-size:14px; }
+.evgf-dm { display:flex; gap:4px; }
+.evgf-dm .ev-dm-btn { border:1px solid #e3e8f2; background:#fff; color:#666; font-size:9.5px; font-weight:700; padding:2px 10px; border-radius:20px; cursor:pointer; line-height:1.5; transition:all .15s; }
+.evgf-dm .ev-dm-btn.active { background:#0a1628; color:#c9a84c; border-color:#0a1628; }
+.evgf-btn { background:linear-gradient(135deg,#c9a84c 0%,#e3c76f 100%); color:#0a1628; border:none; border-radius:12px; padding:0 30px; font-size:15px; font-weight:700; letter-spacing:.3px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; min-height:64px; transition:all .2s; }
+.evgf-btn:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(201,168,76,.35); }
+@media(max-width:768px){
+    .nm-concerts-hero { padding:70px 0 32px; min-height:auto; }
+    .nm-ticket-search { padding:14px; border-radius:14px; margin-top:16px; }
+    .evgf-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .evgf-field { min-height:0; height:auto; padding:9px 12px; border-radius:10px; }
+    .evgf-field:nth-child(3) { grid-column:1 / -1; }
+    .evgf-field > label, .evgf-labelrow label { font-size:8.5px; }
+    .evgf-field input, .evgf-field select { font-size:13.5px; }
+    .evgf-btn { grid-column:1 / -1; width:100%; height:auto; min-height:0; padding:12px; font-size:14px; border-radius:10px; }
+}
 </style>
 @endpush
 
@@ -56,30 +126,29 @@
 
                 <div class="nm-ticket-search">
                     <form method="GET">
-                        <div class="row g-3">
-                            <div class="col-md-5">
-                                <label>Artist or Event</label>
-                                <input type="text" name="keyword" class="form-control" placeholder="e.g. Taylor Swift, Beyonce, Hip-Hop..." value="{{ request('keyword') }}">
+                        <div class="evgf-row">
+                            <div class="evgf-field" style="flex:1.4 1 210px;">
+                                <label><i class="fas fa-music"></i>Artist or Event</label>
+                                <input type="text" name="keyword" placeholder="e.g. Taylor Swift, Hip-Hop…" value="{{ request('keyword') }}">
                             </div>
-                            <div class="col-md-3">
-                                <label>City</label>
-                                <input type="text" name="city" class="form-control" placeholder="e.g. New York, Atlanta..." value="{{ request('city') }}">
+                            <div class="evgf-field">
+                                <label><i class="fas fa-map-marker-alt"></i>City</label>
+                                <input type="text" name="city" placeholder="e.g. New York, Atlanta…" value="{{ request('city') }}">
                             </div>
-                            <div class="col-md-3">
-                                <label><i class="fas fa-calendar me-1"></i>Date</label>
-                                <div style="display:flex;gap:5px;margin-bottom:6px;">
-                                    <button type="button" class="ev-dm-btn {{ !request('date') || strlen(request('date'))==10 ? 'active' : '' }}" onclick="evToggleDM(this,'ev-date-input','date')">Exact Date</button>
-                                    <button type="button" class="ev-dm-btn {{ strlen(request('date'))==7 ? 'active' : '' }}" onclick="evToggleDM(this,'ev-date-input','month')">By Month</button>
+                            <div class="evgf-field">
+                                <div class="evgf-labelrow">
+                                    <label><i class="fas fa-calendar"></i>Date</label>
+                                    <div class="evgf-dm">
+                                        <button type="button" class="ev-dm-btn {{ !request('date') || strlen(request('date'))==10 ? 'active' : '' }}" onclick="evToggleDM(this,'ev-date-input','date')">Exact</button>
+                                        <button type="button" class="ev-dm-btn {{ strlen(request('date'))==7 ? 'active' : '' }}" onclick="evToggleDM(this,'ev-date-input','month')">Month</button>
+                                    </div>
                                 </div>
                                 <input id="ev-date-input" name="date"
                                     type="{{ strlen(request('date'))==7 ? 'month' : 'date' }}"
-                                    class="form-control"
                                     value="{{ request('date') }}"
                                     min="{{ strlen(request('date'))==7 ? date('Y-m') : date('Y-m-d') }}">
                             </div>
-                            <div class="col-md-1 d-flex align-items-end">
-                                <button type="submit" class="nm-search-btn-gold"><i class="fas fa-search me-1"></i> Search</button>
-                            </div>
+                            <button type="submit" class="evgf-btn"><i class="fas fa-search"></i> Search</button>
                         </div>
                     </form>
                 </div>
@@ -106,17 +175,23 @@
 @endif
 
 <div class="container py-4">
+    @php
+        $activeKw = strtolower(trim(request('keyword', '')));
+        $isTab = fn($val) => $activeKw === strtolower($val) ? 'active' : '';
+    @endphp
     <div class="nm-cat-tabs">
-        <a href="{{ url('/concerts') }}" class="nm-cat-tab {{ !request('keyword') ? 'active' : '' }}"><i class="fas fa-music"></i> All Events</a>
-        <a href="{{ url('/concerts?keyword=Pop') }}" class="nm-cat-tab {{ request('keyword')=='Pop' ? 'active' : '' }}"><i class="fas fa-microphone"></i> Pop</a>
-        <a href="{{ url('/concerts?keyword=Hip-Hop') }}" class="nm-cat-tab {{ request('keyword')=='Hip-Hop' ? 'active' : '' }}"><i class="fas fa-headphones"></i> Hip-Hop</a>
-        <a href="{{ url('/concerts?keyword=R%26B') }}" class="nm-cat-tab {{ request('keyword')=='R&B' ? 'active' : '' }}"><i class="fas fa-music"></i> R&B</a>
-        <a href="{{ url('/concerts?keyword=Rock') }}" class="nm-cat-tab {{ request('keyword')=='Rock' ? 'active' : '' }}"><i class="fas fa-guitar"></i> Rock</a>
-        <a href="{{ url('/concerts?keyword=Country') }}" class="nm-cat-tab {{ request('keyword')=='Country' ? 'active' : '' }}"><i class="fas fa-guitar"></i> Country</a>
-        <a href="{{ url('/concerts?keyword=Festival') }}" class="nm-cat-tab {{ request('keyword')=='Festival' ? 'active' : '' }}"><i class="fas fa-star"></i> Festival</a>
-        <a href="{{ url('/concerts?keyword=Broadway') }}" class="nm-cat-tab {{ request('keyword')=='Broadway' ? 'active' : '' }}"><i class="fas fa-theater-masks"></i> Broadway</a>
+        <a href="{{ url('/concerts') }}" class="nm-cat-tab {{ $activeKw === '' ? 'active' : '' }}"><i class="fas fa-music"></i> All Events</a>
+        <a href="{{ url('/concerts?keyword=Pop') }}" class="nm-cat-tab {{ $isTab('Pop') }}"><i class="fas fa-microphone"></i> Pop</a>
+        <a href="{{ url('/concerts?keyword=Hip-Hop') }}" class="nm-cat-tab {{ $isTab('Hip-Hop') }}"><i class="fas fa-headphones"></i> Hip-Hop</a>
+        <a href="{{ url('/concerts?keyword=R%26B') }}" class="nm-cat-tab {{ $isTab('R&B') }}"><i class="fas fa-music"></i> R&B</a>
+        <a href="{{ url('/concerts?keyword=Rock') }}" class="nm-cat-tab {{ $isTab('Rock') }}"><i class="fas fa-guitar"></i> Rock</a>
+        <a href="{{ url('/concerts?keyword=Country') }}" class="nm-cat-tab {{ $isTab('Country') }}"><i class="fas fa-guitar"></i> Country</a>
+        <a href="{{ url('/concerts?keyword=Festival') }}" class="nm-cat-tab {{ $isTab('Festival') }}"><i class="fas fa-star"></i> Festival</a>
+        <a href="{{ url('/concerts?keyword=Broadway') }}" class="nm-cat-tab {{ $isTab('Broadway') }}"><i class="fas fa-theater-masks"></i> Broadway</a>
     </div>
 
+    <div class="nm-results-layout">
+    <div class="nm-results-main">
     @if($error === 'no_key')
         <div class="alert alert-warning">TicketSqueeze API key not configured.</div>
     @elseif($error)
@@ -145,6 +220,9 @@
                 elseif(str_contains($catLow,'country')) $faIcon='fa-guitar';
                 elseif(str_contains($catLow,'pop')) $faIcon='fa-microphone';
                 elseif(str_contains($catLow,'broadway')||str_contains($catLow,'theater')) $faIcon='fa-theater-masks';
+                $eventDt   = isset($event['date']) ? \Carbon\Carbon::parse($event['date']) : null;
+                $isThisWeek = $eventDt && $eventDt->between(now(), now()->addDays(7));
+                $isSellingFast = isset($event['tickets']['ticketcount']) && $event['tickets']['ticketcount'] > 0 && $event['tickets']['ticketcount'] < 15;
             @endphp
             <div class="nm-event-card" data-date="{{ $dateTs }}" data-price="{{ $priceVal }}" data-source="{{ $source }}">
                 @if(!empty($event['image']))
@@ -152,6 +230,13 @@
                 <div class="nm-event-img-placeholder" style="display:none"><i class="fas {{ $faIcon }}"></i></div>
                 @else
                 <div class="nm-event-img-placeholder"><i class="fas {{ $faIcon }}"></i></div>
+                @endif
+                @if($eventDt)
+                <div class="nm-event-datebox">
+                    <div class="mon">{{ $eventDt->format('M') }}</div>
+                    <div class="day">{{ $eventDt->format('j') }}</div>
+                    <div class="wd">{{ $eventDt->format('D') }}</div>
+                </div>
                 @endif
                 <div class="nm-event-body">
                     <p class="nm-event-cat">
@@ -162,13 +247,14 @@
                     </p>
                     <h4 class="nm-event-title">{{ $event['name'] }}</h4>
                     <div class="nm-event-meta">
-                        @if($performers)<div><i class="fas fa-user"></i> {{ $performers }}</div>@endif
-                        @if($venueName)<div><i class="fas fa-map-marker-alt"></i> {{ $venueName }}{{ $city ? ', '.$city : '' }}</div>@endif
-                        <div><i class="fas fa-calendar"></i> {{ $date }}{{ $time ? ' at '.$time : '' }}</div>
-                        @if(isset($event['tickets']['ticketcount']) && $event['tickets']['ticketcount'] > 0)
-                        <div><i class="fas fa-ticket-alt"></i> {{ number_format($event['tickets']['ticketcount']) }} tickets</div>
-                        @endif
+                        @if($performers)<span><i class="fas fa-user"></i> {{ $performers }}</span>@endif
+                        @if($venueName)<span><i class="fas fa-map-marker-alt"></i> {{ $venueName }}{{ $city ? ', '.$city : '' }}</span>@endif
+                        <span><i class="fas fa-calendar"></i> {{ $date }}{{ $time ? ' '.$time : '' }}</span>
+                        @if($isThisWeek)<span class="nm-ev-badge week"><i class="fas fa-calendar-check"></i> This week</span>@endif
+                        @if($isSellingFast)<span class="nm-ev-badge hot"><i class="fas fa-fire"></i> Selling fast</span>@endif
                     </div>
+                </div>
+                <div class="nm-event-action">
                     <div class="nm-event-price">{{ $priceStr }} <span>/ ticket</span></div>
                     <a href="{{ $ticketUrl }}" target="_blank" rel="noopener" class="nm-book-ticket">
                         <i class="fas fa-ticket-alt me-1"></i> Get Tickets
@@ -187,6 +273,32 @@
             No events found. Try a different artist or city.
         </div>
     @endif
+    </div>{{-- /nm-results-main --}}
+
+    <aside class="nm-results-sidebar">
+        @if(!empty($suggestedArtists))
+            <div class="nm-sidebar-title">Popular Artists</div>
+            <div class="nm-suggest-col">
+                @foreach($suggestedArtists as $artist)
+                <a href="{{ url('/concerts?keyword='.urlencode($artist['name'])) }}" class="nm-suggest-chip">
+                    <img src="{{ $artist['image'] }}" alt="{{ $artist['name'] }}" loading="lazy">
+                    <span class="nm-suggest-info">
+                        <strong>{{ $artist['name'] }}</strong>
+                        <small>{{ $artist['category'] }} &bull; {{ $artist['count'] }} event{{ $artist['count']!=1?'s':'' }}</small>
+                    </span>
+                </a>
+                @endforeach
+            </div>
+        @else
+            <div class="nm-sidebar-hero">
+                <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&q=80" alt="Live music">
+                <div class="nm-sidebar-hero-body">
+                    <p>Search a city or pick a genre above to see real-time listings, prices, and availability for shows near you.</p>
+                </div>
+            </div>
+        @endif
+    </aside>
+    </div>{{-- /nm-results-layout --}}
 </div>
 
 @push('scripts')

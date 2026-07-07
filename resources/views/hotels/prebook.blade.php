@@ -220,6 +220,16 @@ function htbSetMsg(txt, type) {
     el.innerHTML = txt;
 }
 
+// Server/Stripe errors aren't always plain strings — pull the real message out
+// instead of letting `new Error(obj)` collapse it to "[object Object]".
+function htbErrText(v) {
+    if (!v) return 'Something went wrong. Please try again.';
+    if (typeof v === 'string') return v;
+    if (typeof v.message === 'string') return v.message;
+    if (v.error) return htbErrText(v.error);
+    try { return JSON.stringify(v); } catch (e) { return 'Something went wrong. Please try again.'; }
+}
+
 async function htbSubmit() {
     var fn = document.getElementById('htb-fn').value.trim();
     var ln = document.getElementById('htb-ln').value.trim();
@@ -243,13 +253,21 @@ async function htbSubmit() {
             body: JSON.stringify({ amount: _amount, currency: _currency })
         });
         var piData = await piRes.json();
-        if (piData.error) throw new Error(piData.error);
+        if (!piRes.ok || piData.error) {
+            console.error('Payment-intent error:', piRes.status, piData);
+            throw new Error(htbErrText(piData.error) + (piRes.ok ? '' : ' (HTTP ' + piRes.status + ')'));
+        }
 
         // Step 2: Confirm card with Stripe
         var { paymentIntent, error } = await _htbStripe.confirmCardPayment(piData.clientSecret, {
             payment_method: { card: _htbCard, billing_details: { name: fn + ' ' + ln, email: em } }
         });
-        if (error) { document.getElementById('htb-card-err').textContent = error.message; throw new Error(error.message); }
+        if (error) {
+            console.error('Stripe confirmCardPayment error:', error);
+            var cardMsg = htbErrText(error);
+            document.getElementById('htb-card-err').textContent = cardMsg;
+            throw new Error(cardMsg);
+        }
 
         // Step 3: Book with LiteAPI
         var bookRes = await fetch('{{ route('hotels.book') }}', {
@@ -270,11 +288,14 @@ async function htbSubmit() {
             document.getElementById('htb-booking-hotel').textContent = bookData.hotel + ' · ' + bookData.checkin + ' → ' + bookData.checkout;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-            throw new Error(bookData.error || 'Booking failed after payment. Please contact support.');
+            console.error('Booking failed:', bookRes.status, bookData);
+            throw new Error(htbErrText(bookData.error) || 'Booking failed after payment. Please contact support.');
         }
     } catch(e) {
-        if (e.message !== document.getElementById('htb-card-err').textContent) {
-            htbSetMsg('<i class="fas fa-exclamation-triangle me-2"></i>' + e.message, 'err');
+        console.error('Booking flow failed:', e);
+        var msg = htbErrText(e && e.message ? e.message : e);
+        if (msg !== document.getElementById('htb-card-err').textContent) {
+            htbSetMsg('<i class="fas fa-exclamation-triangle me-2"></i>' + msg, 'err');
         }
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-lock me-2"></i>Retry Payment';

@@ -425,9 +425,13 @@ class HotelsController extends Controller
 
                 // Send confirmation emails
                 try {
-                    Mail::to(optional($booking->user)->email ?? optional(auth()->user())->email ?? '')->send(new HotelBookingMail($booking, $hotel));
-                    Mail::to(config('mail.from.address'))->send(new HotelBookingMail($booking, $hotel, true));
-                } catch (\Exception $e) {
+                    $recipient = optional($booking->user)->email ?? optional(auth()->user())->email;
+                    $mailUser  = $booking->user ?? auth()->user();
+                    if ($recipient) {
+                        Mail::to($recipient)->send(new HotelBookingMail($booking, $hotel, $mailUser));
+                    }
+                    Mail::to(widget(1)->extra_field_2 ?: config('mail.from.address'))->send(new HotelBookingMail($booking, $hotel, $mailUser, true));
+                } catch (\Throwable $e) {
                     \Log::error('Failed to send Paystack confirmation emails: ' . $e->getMessage());
                 }
 
@@ -471,15 +475,18 @@ class HotelsController extends Controller
 
             // Send confirmation email to user
             try {
-                Mail::to(optional($booking->user)->email ?? optional(auth()->user())->email ?? '')->send(new HotelBookingMail($booking, $hotel));
-            } catch (\Exception $e) {
+                $recipient = optional($booking->user)->email ?? optional(auth()->user())->email;
+                if ($recipient) {
+                    Mail::to($recipient)->send(new HotelBookingMail($booking, $hotel, $booking->user ?? auth()->user()));
+                }
+            } catch (\Throwable $e) {
                 \Log::error('Error sending hotel booking confirmation email: ' . $e->getMessage());
             }
 
             // Send notification email to admin
             try {
-                Mail::to(config('mail.from.address'))->send(new HotelBookingMail($booking, $hotel, true));
-            } catch (\Exception $e) {
+                Mail::to(widget(1)->extra_field_2 ?: config('mail.from.address'))->send(new HotelBookingMail($booking, $hotel, $booking->user ?? auth()->user(), true));
+            } catch (\Throwable $e) {
                 \Log::error('Error sending hotel booking notification email to admin: ' . $e->getMessage());
             }
 
@@ -558,15 +565,18 @@ class HotelsController extends Controller
 
                 // Send confirmation email to user
                 try {
-                    Mail::to(optional($booking->user)->email ?? optional(auth()->user())->email ?? '')->send(new HotelBookingMail($booking, $hotel));
-                } catch (\Exception $e) {
+                    $recipient = optional($booking->user)->email ?? optional(auth()->user())->email;
+                    if ($recipient) {
+                        Mail::to($recipient)->send(new HotelBookingMail($booking, $hotel, $booking->user ?? auth()->user()));
+                    }
+                } catch (\Throwable $e) {
                     \Log::error('Error sending hotel booking confirmation email: ' . $e->getMessage());
                 }
 
                 // Send notification email to admin
                 try {
-                    Mail::to(config('mail.from.address'))->send(new HotelBookingMail($booking, $hotel, true));
-                } catch (\Exception $e) {
+                    Mail::to(widget(1)->extra_field_2 ?: config('mail.from.address'))->send(new HotelBookingMail($booking, $hotel, $booking->user ?? auth()->user(), true));
+                } catch (\Throwable $e) {
                     \Log::error('Error sending hotel booking notification email to admin: ' . $e->getMessage());
                 }
             }

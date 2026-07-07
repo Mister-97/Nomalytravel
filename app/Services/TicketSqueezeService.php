@@ -75,17 +75,46 @@ class TicketSqueezeService
     {
         if (empty(trim($term))) return null;
         $slug = str_replace(' ', '_', trim($term));
-        return Cache::remember('wiki_img_' . md5($term), 86400 * 7, function () use ($slug) {
+        return Cache::remember('wiki_img_' . md5($term), 86400 * 7, function () use ($slug, $term) {
             try {
-                $resp = Http::timeout(4)
+                $resp = Http::timeout(2)
                     ->withHeader('User-Agent', 'NomalyTravel/1.0 (nomalytravel.com)')
                     ->get("https://en.wikipedia.org/api/rest_v1/page/summary/" . urlencode($slug));
                 if ($resp->failed()) return null;
-                return $resp->json()['thumbnail']['source'] ?? null;
+                $json = $resp->json();
+
+                // Wikipedia's summary endpoint can redirect to an unrelated or
+                // disambiguation page for loosely-matching titles (event/promo
+                // names, generic venue names) — reject anything that doesn't
+                // clearly correspond to the term we actually searched for.
+                if (($json['type'] ?? '') === 'disambiguation') return null;
+                if (!$this->titleMatches($term, $json['title'] ?? '')) return null;
+
+                return $json['thumbnail']['source'] ?? null;
             } catch (\Exception $e) {
                 return null;
             }
         });
+    }
+
+    // Requires the returned Wikipedia title to share at least one meaningful
+    // (4+ char) word with the search term, so a mismatch/redirect can't slip
+    // through and show a random unrelated photo on the site.
+    private function titleMatches(string $term, string $title): bool
+    {
+        if ($title === '') return false;
+        $norm = fn($s) => array_filter(preg_split('/[^a-z0-9]+/i', strtolower($s)), fn($w) => strlen($w) >= 4);
+        $termWords  = $norm($term);
+        $titleWords = $norm($title);
+        return (bool) array_intersect($termWords, $titleWords);
+    }
+
+    // Public entry point for "suggested teams" chips — always returns something
+    // displayable (falls back to the category placeholder) since it's rendered
+    // as a small logo tile, not a hero image where a blank result is acceptable.
+    public function getSuggestedEntityImage(string $name, string $categoryFallback = 'sports'): string
+    {
+        return $this->getWikipediaImage($name) ?? $this->getCategoryFallback($categoryFallback);
     }
 
     protected function getAudioDbImage(string $artist): ?string
@@ -93,7 +122,7 @@ class TicketSqueezeService
         if (empty(trim($artist))) return null;
         return Cache::remember('audiodb_img_' . md5($artist), 86400 * 7, function () use ($artist) {
             try {
-                $resp = Http::timeout(4)
+                $resp = Http::timeout(2)
                     ->get('https://www.theaudiodb.com/api/v1/json/2/search.php', ['s' => $artist]);
                 if ($resp->failed()) return null;
                 $artists = $resp->json()['artists'] ?? [];
@@ -189,6 +218,46 @@ class TicketSqueezeService
         return $events;
     }
 
+    // TicketSqueeze paginates at 48/page — a full season easily exceeds one
+    // page (e.g. NFL: 61 total), so page 1 alone silently drops the later
+    // (later-dated) games. Follow last_page up to a safety cap and merge.
+    protected function getAllPages(string $endpoint, array $params, int $maxPages = 5): array
+    {
+        $first = $this->get($endpoint, array_merge($params, ['page' => 1]));
+        if (!($first['success'] ?? false)) {
+            return $first;
+        }
+
+        $all = $first['data']['data'] ?? [];
+        $lastPage = min($first['data']['last_page'] ?? 1, $maxPages);
+
+        // TicketSqueeze's own API runs ~2s/request — fetching pages 2..N one
+        // at a time compounded into 8-12s page loads. Firing them concurrently
+        // via Http::pool cuts that to roughly the cost of a single request.
+        if ($lastPage > 1) {
+            $responses = Http::pool(function ($pool) use ($endpoint, $params, $lastPage) {
+                for ($page = 2; $page <= $lastPage; $page++) {
+                    $pool->timeout(12)
+                        ->withHeader('X-Api-Key', $this->apiKey)
+                        ->accept('application/json')
+                        ->get($this->baseUrl . $endpoint, array_merge($params, ['page' => $page]));
+                }
+            });
+
+            foreach ($responses as $resp) {
+                if ($resp instanceof \Illuminate\Http\Client\Response && $resp->successful()) {
+                    $json = $resp->json();
+                    if (!empty($json['data']['data'])) {
+                        $all = array_merge($all, $json['data']['data']);
+                    }
+                }
+            }
+        }
+
+        $first['data']['data'] = $all;
+        return $first;
+    }
+
     protected function parseEvents(array $json, string $cityFilter = '', string $categoryType = ''): array
     {
         $raw = [];
@@ -228,7 +297,7 @@ class TicketSqueezeService
         $city    = $filters['city'] ?? '';
         $q       = $city ? $keyword . ' ' . $city : $keyword;
 
-        $json = $this->get('/events/search', ['q' => $keyword, 'per_page' => 48, 'tickets_only' => true]);
+        $json = $this->getAllPages('/events/search', ['q' => $keyword, 'per_page' => 48, 'tickets_only' => true]);
 
         if (!($json['success'] ?? false)) {
             $err = $json['error'] ?? 'api_error';
@@ -236,7 +305,11 @@ class TicketSqueezeService
             return ['events' => [], 'error' => 'Unable to load live sports events. Please try again.'];
         }
 
-        $events = $this->enrichImages($this->parseEvents($json, $city, 'sports'), 'sports');
+        // enrichImages() is intentionally skipped — per-event images were
+        // dropped from the results list in favor of the StubHub-style date-box
+        // layout, so those lookups (one Wikipedia/AudioDB call per unique
+        // performer/venue, up to hundreds per page) were pure wasted latency.
+        $events = $this->parseEvents($json, $city, 'sports');
         $events = $this->filterByDateRange($events, $filters);
         return ['events' => $events, 'error' => null];
     }
@@ -247,7 +320,7 @@ class TicketSqueezeService
         $city    = $filters['city'] ?? '';
         $q       = $city ? $keyword . ' ' . $city : $keyword;
 
-        $json = $this->get('/events/search', ['q' => $keyword, 'per_page' => 48, 'tickets_only' => true]);
+        $json = $this->getAllPages('/events/search', ['q' => $keyword, 'per_page' => 48, 'tickets_only' => true]);
 
         if (!($json['success'] ?? false)) {
             $err = $json['error'] ?? 'api_error';
@@ -255,7 +328,7 @@ class TicketSqueezeService
             return ['events' => [], 'error' => 'Unable to load live concert events. Please try again.'];
         }
 
-        $events = $this->enrichImages($this->parseEvents($json, $city, 'concerts'), 'concerts');
+        $events = $this->parseEvents($json, $city, 'concerts');
         $events = $this->filterByDateRange($events, $filters);
         return ['events' => $events, 'error' => null];
     }

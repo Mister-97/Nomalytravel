@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 
 class DuffelStaysService
 {
@@ -16,7 +15,7 @@ class DuffelStaysService
         $this->client = new Client([
             'base_uri' => 'https://api.duffel.com/',
             'headers'  => [
-                'Authorization' => 'Bearer ' . $apiKey,
+                'Authorization'  => 'Bearer ' . $apiKey,
                 'Duffel-Version' => 'v2',
                 'Accept'         => 'application/json',
                 'Content-Type'   => 'application/json',
@@ -54,56 +53,51 @@ class DuffelStaysService
         return json_decode($response->getBody()->getContents(), true);
     }
 
-    public function getAccommodation(string $searchId, string $accommodationId): array
+    // Search-result rates expire with the result's expires_at; callers must
+    // handle failures by prompting a fresh search.
+    public function fetchAllRates(string $searchResultId): array
     {
-        $response = $this->client->get("stays/search/{$searchId}/accommodation/{$accommodationId}");
+        $response = $this->client->post("stays/search_results/{$searchResultId}/actions/fetch_all_rates", [
+            'json' => ['data' => (object) []],
+        ]);
+
         return json_decode($response->getBody()->getContents(), true);
     }
 
-    public function createQuote(array $params): array
+    public function createQuote(string $rateId): array
     {
-        $payload = [
-            'data' => [
-                'accommodation_id' => $params['accommodation_id'],
-                'rate_plan_id'     => $params['rate_plan_id'],
-                'check_in_date'    => $params['check_in_date'],
-                'check_out_date'   => $params['check_out_date'],
-                'rooms'            => (int) ($params['rooms'] ?? 1),
-                'guests'           => $params['guests'],
-            ],
-        ];
-
         $response = $this->client->post('stays/quotes', [
-            'json' => $payload,
+            'json' => ['data' => ['rate_id' => $rateId]],
         ]);
 
         return json_decode($response->getBody()->getContents(), true);
     }
 
-    public function createReservation(array $params): array
+    public function createBooking(array $params): array
     {
         $payload = [
             'data' => [
-                'quote_id' => $params['quote_id'],
-                'guests'   => $params['guests'],
-                'payment'  => [
-                    'type'     => 'balance',
-                    'currency' => $params['currency'] ?? 'USD',
-                    'amount'   => $params['amount'],
-                ],
+                'quote_id'     => $params['quote_id'],
+                'guests'       => $params['guests'],
+                'email'        => $params['email'],
+                'phone_number' => $params['phone_number'],
             ],
         ];
 
-        $response = $this->client->post('stays/reservations', [
+        if (!empty($params['metadata'])) {
+            $payload['data']['metadata'] = $params['metadata'];
+        }
+
+        $response = $this->client->post('stays/bookings', [
             'json' => $payload,
         ]);
 
         return json_decode($response->getBody()->getContents(), true);
     }
 
-    public function getReservation(string $reservationId): array
+    public function getBooking(string $bookingId): array
     {
-        $response = $this->client->get("stays/reservations/{$reservationId}");
+        $response = $this->client->get("stays/bookings/{$bookingId}");
         return json_decode($response->getBody()->getContents(), true);
     }
 }

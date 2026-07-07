@@ -59,12 +59,25 @@ return $result;
 
     public function bookHotel($prebookId, $guestInfo)
     {
+        // LiteAPI requires "guests" (who's staying) separately from "holder" (who
+        // booked), and a "payment" method — we already charge the guest via our
+        // own Stripe integration, so ACC_CREDIT_CARD bills the wholesale cost to
+        // this account's own linked card rather than asking LiteAPI to charge the guest again.
         $response = Http::withHeaders([
             'X-API-Key' => $this->apiKey,
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/rates/book", [
             'prebookId' => $prebookId,
             'holder'    => $guestInfo,
+            'guests'    => [[
+                'occupancyNumber' => 1,
+                'firstName'       => $guestInfo['firstName'],
+                'lastName'        => $guestInfo['lastName'],
+                'email'           => $guestInfo['email'],
+            ]],
+            'payment'   => [
+                'method' => 'ACC_CREDIT_CARD',
+            ],
         ]);
 
         return $response->json();

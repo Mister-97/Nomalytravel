@@ -937,7 +937,9 @@ Route::get('/api/seat-map/{offer_id}', function($offer_id) {
 use App\Http\Controllers\DuffelStaysController;
 Route::get('/stays', fn() => redirect('/hotels'))->name('stays.index');
 Route::get('/stays/search', fn() => redirect('/hotels'))->name('stays.search');
-Route::get('/stays/{searchId}/{accommodationId}', fn($searchId, $accommodationId) => redirect('/hotels/stay/'.$accommodationId))->name('stays.detail');
 Route::post('/stays/quote', [DuffelStaysController::class, 'quote'])->name('stays.quote');
 Route::post('/stays/reserve', [DuffelStaysController::class, 'reserve'])->name('stays.reserve');
+// Must be registered before the {searchId}/{accommodationId} wildcard below —
+// otherwise "confirmation" is parsed as $searchId and this route never matches.
 Route::get('/stays/confirmation/{id}', [DuffelStaysController::class, 'confirmation'])->name('stays.confirmation');
+Route::get('/stays/{searchId}/{accommodationId}', fn($searchId, $accommodationId) => redirect('/hotels/stay/'.$accommodationId))->name('stays.detail');

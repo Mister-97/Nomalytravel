@@ -441,14 +441,23 @@ function flSetupAC(inputId, codeId, dropId) {
             }
             var html=''; var ai=0;
             data.forEach(function(r){
-                if(r.type==='city') return;
-                var flag=flGetFlag(r.country);
-                html+='<div class="nm-ac-item" data-code="'+r.code+'" data-label="'+(r.city||r.name).replace(/"/g,'&quot;')+' ('+r.code+')" data-idx="'+ai+'">'
-                    +'<span class="nm-ac-icon nm-ac-icon-apt">'+flag+'</span>'
-                    +'<span class="nm-ac-text"><div class="nm-ac-name">'+flEsc(r.city||r.name)+'</div>'
-                    +'<div class="nm-ac-sub">'+flEsc(r.name)+(r.country?' &bull; '+flEsc(r.country):'')+'</div></span>'
-                    +'<span class="nm-ac-code">'+r.code+'</span></div>';
-                ai++;
+                if(r.type==='city' && r.code){
+                    var flag=flGetFlag(r.country);
+                    html+='<div class="nm-ac-item nm-ac-city" data-code="'+r.code+'" data-label="'+(r.name).replace(/"/g,'&quot;')+' — All Airports ('+r.code+')" data-idx="'+ai+'">'
+                        +'<span class="nm-ac-icon nm-ac-icon-apt">'+flag+'</span>'
+                        +'<span class="nm-ac-text"><div class="nm-ac-name">'+flEsc(r.name)+' <span style="font-size:10px;opacity:.7;">&mdash; All Airports</span></div>'
+                        +'<div class="nm-ac-sub">Search all airports in '+flEsc(r.name)+(r.country?' &bull; '+flEsc(r.country):'')+'</div></span>'
+                        +'<span class="nm-ac-code" style="background:#1a3a6b;">'+r.code+'</span></div>';
+                    ai++;
+                } else if(r.type!=='city'){
+                    var flag=flGetFlag(r.country);
+                    html+='<div class="nm-ac-item" data-code="'+r.code+'" data-label="'+(r.city||r.name).replace(/"/g,'&quot;')+' ('+r.code+')" data-idx="'+ai+'">'
+                        +'<span class="nm-ac-icon nm-ac-icon-apt">'+flag+'</span>'
+                        +'<span class="nm-ac-text"><div class="nm-ac-name">'+flEsc(r.city||r.name)+'</div>'
+                        +'<div class="nm-ac-sub">'+flEsc(r.name)+(r.country?' &bull; '+flEsc(r.country):'')+'</div></span>'
+                        +'<span class="nm-ac-code">'+r.code+'</span></div>';
+                    ai++;
+                }
             });
             if(!html) html='<div class="nm-ac-no-results">No results — try typing differently</div>';
             drop.innerHTML=html; drop.classList.add('open'); bindItems(); activeIdx=-1;

@@ -249,7 +249,13 @@ return response()->json(['hotels' => $hotels]);
             }
 
             $error = $result['error'] ?? ($result['message'] ?? 'Booking failed. Please try again.');
-            return response()->json(['success' => false, 'error' => $error], 422);
+            // LiteAPI sometimes returns error as a nested object ({"error":{"code":...,"description":...}})
+            // rather than a plain string — flatten it so the client never has to guess the shape.
+            if (is_array($error)) {
+                $error = $error['description'] ?? ($error['message'] ?? json_encode($error));
+            }
+            \Illuminate\Support\Facades\Log::error('LiteAPI booking failed', ['prebook_id' => $prebookId, 'result' => $result]);
+            return response()->json(['success' => false, 'error' => (string) $error], 422);
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Hotel book error: ' . $e->getMessage());
@@ -319,7 +325,28 @@ return response()->json(['hotels' => $hotels]);
         }
         $r   = $cached['result'];
         $acc = $r['accommodation'] ?? [];
-        return view('hotels.duffel_detail', compact('acc', 'r', 'checkIn', 'checkOut', 'adults'));
+
+        // Pull every bookable rate for this search result; rates expire with the
+        // search result, so fall back to the summary-only view if the fetch fails.
+        $rooms = [];
+        if (!empty($r['id'])) {
+            try {
+                $full = \Illuminate\Support\Facades\Cache::remember(
+                    'duffel_rates:'.$r['id'],
+                    900,
+                    fn() => $this->duffelStays->fetchAllRates($r['id'])
+                );
+                $fullAcc = $full['data']['accommodation'] ?? [];
+                if (!empty($fullAcc)) {
+                    $acc   = $fullAcc;
+                    $rooms = $fullAcc['rooms'] ?? [];
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Duffel fetch_all_rates failed: '.$e->getMessage());
+            }
+        }
+
+        return view('hotels.duffel_detail', compact('acc', 'r', 'rooms', 'checkIn', 'checkOut', 'adults'));
     }
 
     private function mergeDuffel(array &$hotels, string $city, string $checkIn, string $checkOut, int $adults): void

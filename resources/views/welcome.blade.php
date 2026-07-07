@@ -545,7 +545,10 @@ body { animation: nm-page-in .5s ease both; }
 .nm-hc-stars { color: var(--gold); font-size: 12px; margin-bottom: 5px; }
 .nm-hc-meta, .nm-ec-meta { font-size: 12px; color: #999; line-height: 1.65; }
 .nm-hc-meta i, .nm-ec-meta i { color: var(--gold); width: 14px; }
-.nm-dm-btn { border:1px solid #ddd; background:#fff; color:#777; border-radius:12px; padding:3px 10px; font-size:10px; font-weight:700; cursor:pointer; transition:all .15s; }
+.nm-gf-labelrow { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px; }
+.nm-gf-labelrow label { margin-bottom:0; }
+.nm-gf-btn { height:100%; min-height:66px; }
+.nm-dm-btn { border:1px solid #ddd; background:#fff; color:#777; border-radius:12px; padding:2px 9px; font-size:9.5px; font-weight:700; cursor:pointer; transition:all .15s; line-height:1.5; }
 .nm-dm-btn.active { background:#070D1A; color:#C9A84C; border-color:#070D1A; }
 .nm-hf-btn, .nm-hsf-btn {
   border:1.5px solid #ddd; background:#fff; color:#444; border-radius:20px;
@@ -659,6 +662,9 @@ body { animation: nm-page-in .5s ease both; }
   .nm-gf-panel { padding: 18px; }
   .nm-results-hdr { flex-direction: column; align-items: flex-start; }
   .nm-trip-type { flex-wrap: wrap; }
+  /* Stacked col-12 fields inherit height:100% from the shared multi-line flex
+     row above them, inflating each box far past its content on mobile. */
+  .nm-gf-field, .nm-gf-btn { height: auto; }
 }
 @media (max-width: 480px) {
   .nm-gf-box { border-radius: 16px; }
@@ -879,29 +885,36 @@ body { animation: nm-page-in .5s ease both; }
               </div>
               <div class="col-6 col-md-3">
                 <div class="nm-gf-field">
-                  <label>Sport</label>
-                  <select id="nm-sp-kw">
-                    <option value="">All Sports</option>
-                    <option value="NFL Football">🏈 NFL Football</option>
-                    <option value="NBA Basketball">🏀 NBA Basketball</option>
-                    <option value="MLB Baseball">⚾ MLB Baseball</option>
-                    <option value="NHL Hockey">🏒 NHL Hockey</option>
-                    <option value="MLS Soccer">⚽ MLS Soccer</option>
-                    <option value="UFC MMA">🥊 UFC / MMA</option>
-                    <option value="College Football">🏈 College Football</option>
-                    <option value="College Basketball">🏀 College Basketball</option>
-                    <option value="Golf">⛳ Golf</option>
-                    <option value="Tennis">🎾 Tennis</option>
-                    <option value="Boxing">🥊 Boxing</option>
-                  </select>
+                  <label>Sport or Team</label>
+                  <input type="text" id="nm-sp-kw" list="nm-sp-suggest" autocomplete="off" placeholder="e.g. Yankees, Lakers, NFL…">
+                  <datalist id="nm-sp-suggest">
+                    <option value="NFL">
+                    <option value="NBA">
+                    <option value="WNBA">
+                    <option value="MLB">
+                    <option value="NHL">
+                    <option value="MLS">
+                    <option value="NWSL">
+                    <option value="Volleyball">
+                    <option value="MMA">
+                    <option value="College Football">
+                    <option value="College Basketball">
+                    <option value="Golf">
+                    <option value="Racing">
+                    <option value="Rodeo">
+                    <option value="Tennis">
+                    <option value="Boxing">
+                  </datalist>
                 </div>
               </div>
               <div class="col-6 col-md-3">
                 <div class="nm-gf-field">
-                  <label><i class="fas fa-calendar"></i>Date</label>
-                  <div style="display:flex;gap:4px;margin-bottom:5px;">
-                    <button type="button" class="nm-dm-btn active" data-group="nm-sp" onclick="nmToggleDM(this,'nm-sp')">Exact</button>
-                    <button type="button" class="nm-dm-btn" data-group="nm-sp" onclick="nmToggleDM(this,'nm-sp')">Month</button>
+                  <div class="nm-gf-labelrow">
+                    <label><i class="fas fa-calendar"></i>Date</label>
+                    <div style="display:flex;gap:4px;">
+                      <button type="button" class="nm-dm-btn active" data-group="nm-sp" onclick="nmToggleDM(this,'nm-sp')">Exact</button>
+                      <button type="button" class="nm-dm-btn" data-group="nm-sp" onclick="nmToggleDM(this,'nm-sp')">Month</button>
+                    </div>
                   </div>
                   <input type="date" id="nm-sp-date" min="{{ date('Y-m-d') }}" style="width:100%">
                 </div>
@@ -931,10 +944,12 @@ body { animation: nm-page-in .5s ease both; }
               </div>
               <div class="col-6 col-md-3">
                 <div class="nm-gf-field">
-                  <label><i class="fas fa-calendar"></i>Date</label>
-                  <div style="display:flex;gap:4px;margin-bottom:5px;">
-                    <button type="button" class="nm-dm-btn active" data-group="nm-co" onclick="nmToggleDM(this,'nm-co')">Exact</button>
-                    <button type="button" class="nm-dm-btn" data-group="nm-co" onclick="nmToggleDM(this,'nm-co')">Month</button>
+                  <div class="nm-gf-labelrow">
+                    <label><i class="fas fa-calendar"></i>Date</label>
+                    <div style="display:flex;gap:4px;">
+                      <button type="button" class="nm-dm-btn active" data-group="nm-co" onclick="nmToggleDM(this,'nm-co')">Exact</button>
+                      <button type="button" class="nm-dm-btn" data-group="nm-co" onclick="nmToggleDM(this,'nm-co')">Month</button>
+                    </div>
                   </div>
                   <input type="date" id="nm-co-date" min="{{ date('Y-m-d') }}" style="width:100%">
                 </div>
