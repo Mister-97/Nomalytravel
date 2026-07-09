@@ -99,6 +99,7 @@ return [
         'consumer_secret' => env('TN_CONSUMER_SECRET'),
         'wcid'            => env('TN_WCID_CATALOG', '23884'),
         'wcid_mercury'    => env('TN_WCID_MERCURY', '27886'),
+        'demo'            => env('TN_DEMO_MODE', false),
         'bid'             => env('TN_BID', '14126'),
     ],
 ];

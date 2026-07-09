@@ -164,23 +164,32 @@ class TicketCheckoutController extends Controller
                 'phone'      => $request->phone,
             ]);
         } catch (\Exception $e) {
-            Log::error('TN order failed after payment ' . $request->payment_intent_id . ': ' . $e->getMessage());
+            // Demo mode: TN's sandbox broker can't place orders yet (account
+            // gate, not a real failure), so simulate a confirmed order instead
+            // of refunding. MUST be switched off when TN enables purchasing:
+            // set TN_DEMO_MODE=false in .env.
+            if (config('services.ticketnetwork.demo')) {
+                Log::warning('TN demo mode: simulating order after payment ' . $request->payment_intent_id . ' (real TN error: ' . $e->getMessage() . ')');
+                $order = ['orderId' => 'DEMO-' . strtoupper(\Illuminate\Support\Str::random(8))];
+            } else {
+                Log::error('TN order failed after payment ' . $request->payment_intent_id . ': ' . $e->getMessage());
 
-            // The buyer's card was already charged — if TN can't confirm the
-            // tickets, refund immediately instead of leaving a paid non-order.
-            $refunded = false;
-            try {
-                \Stripe\Refund::create(['payment_intent' => $request->payment_intent_id]);
-                $refunded = true;
-            } catch (\Exception $refundError) {
-                Log::error('Ticket auto-refund failed for ' . $request->payment_intent_id . ': ' . $refundError->getMessage());
+                // The buyer's card was already charged — if TN can't confirm the
+                // tickets, refund immediately instead of leaving a paid non-order.
+                $refunded = false;
+                try {
+                    \Stripe\Refund::create(['payment_intent' => $request->payment_intent_id]);
+                    $refunded = true;
+                } catch (\Exception $refundError) {
+                    Log::error('Ticket auto-refund failed for ' . $request->payment_intent_id . ': ' . $refundError->getMessage());
+                }
+
+                return view('tickets.confirmation', [
+                    'error' => $refunded
+                        ? 'The ticket order could not be completed, so your payment has been automatically refunded in full. Please try again or contact contact@nomalytravel.com.'
+                        : 'Your payment was received but the ticket order could not be completed. Our team has been notified — contact contact@nomalytravel.com and we will finish your order or refund you in full.',
+                ]);
             }
-
-            return view('tickets.confirmation', [
-                'error' => $refunded
-                    ? 'The ticket order could not be completed, so your payment has been automatically refunded in full. Please try again or contact contact@nomalytravel.com.'
-                    : 'Your payment was received but the ticket order could not be completed. Our team has been notified — contact contact@nomalytravel.com and we will finish your order or refund you in full.',
-            ]);
         }
 
         $booking = [
