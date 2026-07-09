@@ -640,6 +640,12 @@ Route::post('/email/resend', [App\Http\Controllers\Auth\VerificationController::
 Route::get('/sports', [App\Http\Controllers\TicketsController::class, 'sports'])->name('tickets.sports');
 Route::get('/concerts', [App\Http\Controllers\TicketsController::class, 'concerts'])->name('tickets.concerts');
 
+// TicketNetwork purchase flow: event listings -> checkout -> Mercury order
+Route::get('/tickets/event/{id}', [App\Http\Controllers\TicketCheckoutController::class, 'event'])->whereNumber('id')->name('tickets.event');
+Route::post('/tickets/checkout', [App\Http\Controllers\TicketCheckoutController::class, 'checkout'])->name('tickets.checkout');
+Route::post('/tickets/payment-intent', [App\Http\Controllers\TicketCheckoutController::class, 'paymentIntent'])->name('tickets.payment.intent');
+Route::post('/tickets/reserve', [App\Http\Controllers\TicketCheckoutController::class, 'reserve'])->name('tickets.reserve');
+
 // Hotels (must be before wildcard slug/module routes)
 Route::get("/hotels", [App\Http\Controllers\HotelController::class, "index"])->name("hotels.index");
 Route::post("/hotels/search", [App\Http\Controllers\HotelController::class, "search"])->name("hotels.search");

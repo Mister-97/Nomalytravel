@@ -9,9 +9,11 @@ class TicketNetworkService
 {
     private string $tokenUrl = 'https://key-manager.tn-apis.com/oauth2/token';
     private string $catalogBase = 'https://sandbox.tn-apis.com/catalog/v2';
+    private string $mercuryBase = 'https://sandbox.tn-apis.com/mercury/v5';
     private string $consumerKey;
     private string $consumerSecret;
     private string $wcid;
+    private string $wcidMercury;
     private string $bid;
 
     // Top-level nodes of the website category tree ("Website category" hierarchy).
@@ -52,6 +54,7 @@ class TicketNetworkService
         $this->consumerKey    = config('services.ticketnetwork.consumer_key');
         $this->consumerSecret = config('services.ticketnetwork.consumer_secret');
         $this->wcid           = config('services.ticketnetwork.wcid', '23884');
+        $this->wcidMercury    = config('services.ticketnetwork.wcid_mercury', '27886');
         $this->bid            = config('services.ticketnetwork.bid', '14126');
     }
 
@@ -179,6 +182,7 @@ class TicketNetworkService
         $sub = $this->subCategoryName($event);
 
         return [
+            'id'         => $event['id'] ?? null,
             'name'       => $event['text']['name'] ?? '',
             'date'       => $event['date']['datetime'] ?? '',
             'venue'      => [
@@ -193,7 +197,7 @@ class TicketNetworkService
             'tickets'    => ['ticketcount' => $event['_metadata']['ticketCount'] ?? 0],
             'price_from' => $event['pricingInfo']['lowPrice']['text']['formatted'] ?? null,
             'image'      => $this->categoryImage($sub, $category),
-            'url'        => '',
+            'url'        => !empty($event['id']) ? route('tickets.event', ['id' => $event['id']]) : '',
             'source'     => 'ticketnetwork',
         ];
     }
@@ -225,5 +229,133 @@ class TicketNetworkService
     public function getConcertEvents(array $params = []): array
     {
         return $this->searchEvents(self::CATEGORY_CONCERTS, 'Concerts', $params);
+    }
+
+    private function topCategoryLabel(array $event): string
+    {
+        $path = $event['defaultCategory']['path'] ?? '';
+        if (str_starts_with($path, self::CATEGORY_SPORTS))   return 'Sports';
+        if (str_starts_with($path, self::CATEGORY_CONCERTS)) return 'Concerts';
+        if (str_starts_with($path, self::CATEGORY_THEATRE))  return 'Theatre';
+        return 'Event';
+    }
+
+    // Single events fetched by id (/events/{id}) come back without the embedded
+    // venue/city objects, so look the event up through the list endpoint instead.
+    public function getEvent(int $id): ?array
+    {
+        $data  = $this->request('/events', ['filter' => 'id eq ' . $id, 'perPage' => 1]);
+        $event = $data['results'][0] ?? null;
+
+        return $event ? $this->normalizeEvent($event, $this->topCategoryLabel($event)) : null;
+    }
+
+    // ------------------------------------------------------------------
+    // Mercury API (inventory + purchasing). Same OAuth token as Catalog but
+    // a different identity header: website-config-id + broker-id pair.
+    // ------------------------------------------------------------------
+
+    private function mercuryRequest(string $method, string $endpoint, array $query = [], ?array $body = null): array
+    {
+        $send = function (string $token) use ($method, $endpoint, $query, $body) {
+            $client = Http::withHeaders([
+                'Authorization'      => 'Bearer ' . $token,
+                'X-Identity-Context' => 'website-config-id=' . $this->wcidMercury . ',broker-id=' . $this->bid,
+                'Accept'             => 'application/json',
+            ]);
+
+            return strtolower($method) === 'post'
+                ? $client->post($this->mercuryBase . $endpoint, $body ?? [])
+                : $client->get($this->mercuryBase . $endpoint, $query);
+        };
+
+        $response = $send($this->getToken());
+
+        if ($response->status() === 401) {
+            $response = $send($this->getToken(true));
+        }
+
+        if ($response->failed()) {
+            // Mercury errors carry a useful "message" (and sometimes field-level
+            // validationErrors) — surface those instead of a bare status code.
+            $json = $response->json();
+            $msg  = $json['message'] ?? $response->body();
+            if (!empty($json['validationErrors'])) {
+                $msg .= ' ' . json_encode($json['validationErrors']);
+            }
+            throw new \Exception('TicketNetwork Mercury error (' . $response->status() . '): ' . $msg);
+        }
+
+        return $response->json() ?? [];
+    }
+
+    public function getTicketGroups(int $eventId): array
+    {
+        $data = $this->mercuryRequest('GET', '/ticketgroups', ['eventId' => $eventId]);
+
+        $groups = [];
+        foreach ($data['ticketGroups'] ?? [] as $tg) {
+            // Skip our own listings and anything that can't be bought.
+            if (!empty($tg['mine']) || (int) ($tg['availableQuantity'] ?? 0) < 1) {
+                continue;
+            }
+            $groups[] = [
+                'id'               => $tg['exchangeTicketGroupId'] ?? null,
+                'section'          => $tg['standardSection'] ?? ($tg['seats']['section'] ?? ''),
+                'row'              => $tg['seats']['row'] ?? '',
+                'available'        => (int) ($tg['availableQuantity'] ?? 0),
+                'quantities'       => $tg['purchasableQuantities'] ?? [],
+                'price'            => (float) ($tg['unitPrice']['retailPrice']['value'] ?? 0),
+                'wholesale'        => (float) ($tg['unitPrice']['wholesalePrice']['value'] ?? 0),
+                'currency'         => $tg['unitPrice']['retailPrice']['currencyCode'] ?? 'USD',
+                'delivery_methods' => $tg['deliveryMethods'] ?? [],
+                'type'             => $tg['ticketGroupType']['description'] ?? 'Event Ticket',
+                'notes'            => $tg['notes'] ?? '',
+            ];
+        }
+
+        usort($groups, fn ($a, $b) => $a['price'] <=> $b['price']);
+
+        return $groups;
+    }
+
+    public function findTicketGroup(int $eventId, int $ticketGroupId): ?array
+    {
+        foreach ($this->getTicketGroups($eventId) as $tg) {
+            if ((int) $tg['id'] === $ticketGroupId) {
+                return $tg;
+            }
+        }
+        return null;
+    }
+
+    // Places a real order with TN. lockRequestId/buyRequestId are client-side
+    // idempotency GUIDs (Mercury validates them as required fields, no separate
+    // lock endpoint exists on this API version).
+    public function placeOrder(array $ticketGroup, int $quantity, array $buyer): array
+    {
+        $payload = [
+            'lockRequestId'         => (string) \Illuminate\Support\Str::uuid(),
+            'buyRequestId'          => (string) \Illuminate\Support\Str::uuid(),
+            'exchangeTicketGroupId' => (int) $ticketGroup['id'],
+            'quantity'              => $quantity,
+            'unitPrice'             => [
+                'value'        => $ticketGroup['wholesale'] ?: $ticketGroup['price'],
+                'currencyCode' => $ticketGroup['currency'],
+            ],
+            'delivery' => [
+                'method' => $ticketGroup['delivery_methods'][0] ?? 'E-Ticket',
+                'email'  => $buyer['email'],
+                'phone'  => $buyer['phone'],
+            ],
+            'billing' => [
+                'firstName' => $buyer['first_name'],
+                'lastName'  => $buyer['last_name'],
+                'email'     => $buyer['email'],
+                'phone'     => $buyer['phone'],
+            ],
+        ];
+
+        return $this->mercuryRequest('POST', '/orders', [], $payload);
     }
 }
