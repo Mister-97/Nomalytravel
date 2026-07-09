@@ -83,7 +83,9 @@
 .nm-sidebar-hero-body p { font-size:13px; color:#666; line-height:1.6; margin:0; }
 @media(max-width:992px){ .nm-results-sidebar { display:none; } }
 .ev-source-badge { display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:2px 6px; border-radius:4px; margin-left:6px; vertical-align:middle; }
-.ev-source-tn { background:#fef9e7; color:#b7791f; }
+.ev-source-tn { background:linear-gradient(135deg,#c9a84c,#e8c96a); color:#0a1628; }
+.nm-event-card[data-source="ticketnetwork"] { animation:tnGlow 3.2s ease-in-out infinite; }
+@keyframes tnGlow { 0%,100% { border-color:rgba(201,168,76,.32); box-shadow:0 1px 6px rgba(0,0,0,0.06); } 50% { border-color:rgba(201,168,76,.95); box-shadow:0 0 12px 1px rgba(201,168,76,.30); } }
 @media(max-width:600px){ .ev-toolbar-inner { flex-direction:column; align-items:flex-start; } }
 
 /* Homepage-style field cards for the ticket search */
@@ -242,7 +244,7 @@
                     <p class="nm-event-cat">
                         {{ $category }}
                         @if($source === 'ticketnetwork')
-                        <span class="ev-source-badge ev-source-tn">TN</span>
+                        <span class="ev-source-badge ev-source-tn"><i class="fas fa-star" style="font-size:8px;"></i> Preferred</span>
                         @endif
                     </p>
                     <h4 class="nm-event-title">{{ $event['name'] }}</h4>
