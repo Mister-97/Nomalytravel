@@ -411,7 +411,7 @@
                                       <div class="nm-curr">{{ $flight['total_currency'] ?? 'USD' }}</div>
                                       <div class="nm-per">per person &middot; total fare</div>
                                       <a href="{{ route('flights.booking.form', trim($flight['id'])) }}"
-                                         class="nm-book-btn"
+                                         class="nm-book-btn nm-book-now-link"
                                          style="display:block;text-align:center;text-decoration:none;">
                                         <i class="fas fa-bolt"></i> Book Now
                                       </a>
@@ -777,6 +777,18 @@
                 initDatepickers();
                 setupAutocomplete('.from_location', '.from_code', '#from_type');
                 setupAutocomplete('.to_location', '.to_code', '#to_type');
+            });
+
+            // Book Now is a plain link, so navigation already works — but on a
+            // slow connection the booking page can take a moment to load with
+            // zero visible feedback, which reads as "nothing happened." Show a
+            // spinner immediately and guard against a second tap re-triggering it.
+            $(document).on('click', '.nm-book-now-link', function() {
+                var $btn = $(this);
+                if ($btn.data('nm-clicked')) return false;
+                $btn.data('nm-clicked', true);
+                $btn.css('pointer-events', 'none').css('opacity', '0.75');
+                $btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading…');
             });
             $(document).ready(function() {
 
