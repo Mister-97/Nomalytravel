@@ -60,8 +60,14 @@
     $checkIn    = $q['check_in_date'] ?? '';
     $checkOut   = $q['check_out_date'] ?? '';
     $nights     = ($checkIn && $checkOut) ? max(1, (int)((strtotime($checkOut)-strtotime($checkIn))/86400)) : 1;
-    $checkInTime  = $q['accommodation']['check_in_information']['check_in_after_time'] ?? '3:00 PM';
-    $checkOutTime = $q['accommodation']['check_in_information']['check_out_before_time'] ?? '12:00 PM';
+    // Duffel returns 24-hour "HH:MM" strings; display them 12-hour with AM/PM.
+    $fmtHotelTime = function($t) {
+        if (!$t || preg_match('/[AaPp][Mm]/', $t)) return $t;
+        $ts = strtotime($t);
+        return $ts ? date('g:i A', $ts) : $t;
+    };
+    $checkInTime  = $fmtHotelTime($q['accommodation']['check_in_information']['check_in_after_time'] ?? '') ?: '3:00 PM';
+    $checkOutTime = $fmtHotelTime($q['accommodation']['check_in_information']['check_out_before_time'] ?? '') ?: '12:00 PM';
     $cancellationTimeline = $cancellationTimeline ?? [];
 @endphp
 

@@ -66,8 +66,14 @@
                     {{ $addr['line_one'] ?? '' }}{{ !empty($addr['city_name']) ? ', '.$addr['city_name'] : '' }}
                 </p>
                 @php
-                    $checkInTime  = $r['check_in_time']  ?: ($acc['check_in_information']['check_in_after_time'] ?? '3:00 PM');
-                    $checkOutTime = $r['check_out_time'] ?: ($acc['check_in_information']['check_out_before_time'] ?? '12:00 PM');
+                    // Duffel returns 24-hour "HH:MM" strings; display them 12-hour with AM/PM.
+                    $fmtHotelTime = function($t) {
+                        if (!$t || preg_match('/[AaPp][Mm]/', $t)) return $t;
+                        $ts = strtotime($t);
+                        return $ts ? date('g:i A', $ts) : $t;
+                    };
+                    $checkInTime  = $fmtHotelTime($r['check_in_time']  ?: ($acc['check_in_information']['check_in_after_time'] ?? '')) ?: '3:00 PM';
+                    $checkOutTime = $fmtHotelTime($r['check_out_time'] ?: ($acc['check_in_information']['check_out_before_time'] ?? '')) ?: '12:00 PM';
                 @endphp
                 <div class="stf-row"><span class="lbl"><i class="fas fa-calendar-check me-1" style="color:var(--gold)"></i>Check-in</span><span class="val">{{ !empty($r['check_in_date']) ? date('M j, Y', strtotime($r['check_in_date'])) : '' }} from {{ $checkInTime }}</span></div>
                 <div class="stf-row"><span class="lbl"><i class="fas fa-calendar-times me-1" style="color:var(--gold)"></i>Check-out</span><span class="val">{{ !empty($r['check_out_date']) ? date('M j, Y', strtotime($r['check_out_date'])) : '' }} by {{ $checkOutTime }}</span></div>

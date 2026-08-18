@@ -144,8 +144,14 @@
     $city     = $addr['city_name'] ?? '';
     $country  = $addr['country_code'] ?? '';
     $line1    = $addr['line_one'] ?? '';
-    $checkInTime  = $acc['check_in_information']['check_in_after_time'] ?? '3:00 PM';
-    $checkOutTime = $acc['check_in_information']['check_out_before_time'] ?? '12:00 PM';
+    // Duffel returns 24-hour "HH:MM" strings; display them 12-hour with AM/PM.
+    $fmtHotelTime = function($t) {
+        if (!$t || preg_match('/[AaPp][Mm]/', $t)) return $t;
+        $ts = strtotime($t);
+        return $ts ? date('g:i A', $ts) : $t;
+    };
+    $checkInTime  = $fmtHotelTime($acc['check_in_information']['check_in_after_time'] ?? '') ?: '3:00 PM';
+    $checkOutTime = $fmtHotelTime($acc['check_in_information']['check_out_before_time'] ?? '') ?: '12:00 PM';
     $keyInfo  = $acc['key_collection']['instructions'] ?? null;
 
     $images = [];
