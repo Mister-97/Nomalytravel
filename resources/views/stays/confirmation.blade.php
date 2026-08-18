@@ -65,9 +65,16 @@
                 <p style="font-size:13px;color:#888;margin-bottom:14px;">
                     {{ $addr['line_one'] ?? '' }}{{ !empty($addr['city_name']) ? ', '.$addr['city_name'] : '' }}
                 </p>
-                <div class="stf-row"><span class="lbl"><i class="fas fa-calendar-check me-1" style="color:var(--gold)"></i>Check-in</span><span class="val">{{ $r['check_in_date'] ?? '' }}</span></div>
-                <div class="stf-row"><span class="lbl"><i class="fas fa-calendar-times me-1" style="color:var(--gold)"></i>Check-out</span><span class="val">{{ $r['check_out_date'] ?? '' }}</span></div>
+                @php
+                    $checkInTime  = $r['check_in_time']  ?: ($acc['check_in_information']['check_in_after_time'] ?? '3:00 PM');
+                    $checkOutTime = $r['check_out_time'] ?: ($acc['check_in_information']['check_out_before_time'] ?? '12:00 PM');
+                @endphp
+                <div class="stf-row"><span class="lbl"><i class="fas fa-calendar-check me-1" style="color:var(--gold)"></i>Check-in</span><span class="val">{{ !empty($r['check_in_date']) ? date('M j, Y', strtotime($r['check_in_date'])) : '' }} from {{ $checkInTime }}</span></div>
+                <div class="stf-row"><span class="lbl"><i class="fas fa-calendar-times me-1" style="color:var(--gold)"></i>Check-out</span><span class="val">{{ !empty($r['check_out_date']) ? date('M j, Y', strtotime($r['check_out_date'])) : '' }} by {{ $checkOutTime }}</span></div>
                 <div class="stf-row"><span class="lbl"><i class="fas fa-info-circle me-1" style="color:var(--gold)"></i>Status</span><span class="val text-capitalize">{{ $r['status'] ?? 'confirmed' }}</span></div>
+                @if (!empty($r['confirmed_at']))
+                <div class="stf-row"><span class="lbl"><i class="fas fa-clock me-1" style="color:var(--gold)"></i>Confirmed on</span><span class="val">{{ date('M j, Y g:i A', strtotime($r['confirmed_at'])) }}</span></div>
+                @endif
             </div>
 
             @if (!empty($r['total_amount']))
@@ -85,7 +92,11 @@
 
             <div class="stf-card">
                 <div class="stf-section-label"><i class="fas fa-undo" style="color:var(--gold)"></i> Cancellation Policy</div>
-                @if (!empty($r['free_cancel_until']))
+                @if (!empty($r['cancellation_timeline']))
+                    @foreach ($r['cancellation_timeline'] as $ct)
+                        <p style="font-size:13px;color:#555;"><strong>Cancel before {{ date('M j, Y g:i A', strtotime($ct['before'] ?? '')) }}:</strong> refund of {{ $ct['currency'] ?? ($r['total_currency'] ?? 'USD') }} {{ number_format((float)($ct['refund_amount'] ?? 0), 2) }}</p>
+                    @endforeach
+                @elseif (!empty($r['free_cancel_until']))
                     <p style="font-size:13px;color:#27ae60;font-weight:700;">Free cancellation before {{ date('M j, Y g:i A', strtotime($r['free_cancel_until'])) }}</p>
                 @elseif (!empty($r['non_refundable']))
                     <p style="font-size:13px;color:#c0392b;font-weight:700;">Non-refundable — this rate cannot be cancelled or refunded.</p>

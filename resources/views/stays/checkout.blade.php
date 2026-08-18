@@ -60,6 +60,9 @@
     $checkIn    = $q['check_in_date'] ?? '';
     $checkOut   = $q['check_out_date'] ?? '';
     $nights     = ($checkIn && $checkOut) ? max(1, (int)((strtotime($checkOut)-strtotime($checkIn))/86400)) : 1;
+    $checkInTime  = $q['accommodation']['check_in_information']['check_in_after_time'] ?? '3:00 PM';
+    $checkOutTime = $q['accommodation']['check_in_information']['check_out_before_time'] ?? '12:00 PM';
+    $cancellationTimeline = $cancellationTimeline ?? [];
 @endphp
 
 <div class="stc-header">
@@ -84,7 +87,11 @@
 
                 <div class="stc-policy">
                     <h6><i class="fas fa-info-circle me-1"></i> Cancellation Policy</h6>
-                    @if ($freeCancelUntil)
+                    @if (!empty($cancellationTimeline))
+                        @foreach ($cancellationTimeline as $ct)
+                            <p><strong>Cancel before {{ date('M j, Y g:i A', strtotime($ct['before'] ?? '')) }}:</strong> refund of {{ $ct['currency'] ?? $currency }} {{ number_format((float)($ct['refund_amount'] ?? 0), 2) }}</p>
+                        @endforeach
+                    @elseif ($freeCancelUntil)
                         <p><strong style="color:#1e8449;">Free cancellation</strong> before {{ date('M j, Y g:i A', strtotime($freeCancelUntil)) }}.</p>
                     @elseif ($nonRefundable)
                         <p><strong style="color:#c0392b;">Non-refundable.</strong> This rate cannot be cancelled or refunded.</p>
@@ -153,6 +160,9 @@
                         {{ $checkIn ? date('M d, Y', strtotime($checkIn)) : '' }} &ndash; {{ $checkOut ? date('M d, Y', strtotime($checkOut)) : '' }}
                         &bull; {{ $nights }} night{{ $nights>1?'s':'' }}
                     </div>
+                    <div class="stc-summary-dates" style="margin-top:-8px;">
+                        Check-in from {{ $checkInTime }} &bull; Check-out by {{ $checkOutTime }}
+                    </div>
                     <div class="stc-row"><span class="lbl">Base rate</span><span class="val">{{ $currency }} {{ number_format($baseAmount, 2) }}</span></div>
                     <div class="stc-row"><span class="lbl">Tax</span><span class="val">{{ $currency }} {{ number_format($taxAmt, 2) }}</span></div>
                     <div class="stc-row"><span class="lbl">Fees</span><span class="val">{{ $currency }} {{ number_format($feeAmt, 2) }}</span></div>
@@ -183,6 +193,9 @@ var _stcDueAtProp   = {{ $dueAtProp ?? 0 }};
 var _stcRoomName    = {!! json_encode($roomName ?? '') !!};
 var _stcFreeCancel  = {!! json_encode($freeCancelUntil ?? '') !!};
 var _stcNonRefund   = {{ $nonRefundable ? 'true' : 'false' }};
+var _stcCancelTimeline = {!! json_encode($cancellationTimeline ?? []) !!};
+var _stcCheckInTime  = {!! json_encode($checkInTime ?? '') !!};
+var _stcCheckOutTime = {!! json_encode($checkOutTime ?? '') !!};
 
 (function(){
     var s = document.createElement('script');
@@ -276,6 +289,8 @@ async function stcSubmit() {
             base_amount: _stcBaseAmount, tax_amount: _stcTaxAmount, fee_amount: _stcFeeAmount,
             due_at_property: _stcDueAtProp, room_name: _stcRoomName,
             free_cancel_until: _stcFreeCancel, non_refundable: _stcNonRefund ? '1' : '0',
+            cancellation_timeline: JSON.stringify(_stcCancelTimeline),
+            check_in_time: _stcCheckInTime, check_out_time: _stcCheckOutTime,
         };
         for (var k in fields) {
             var input = document.createElement('input');

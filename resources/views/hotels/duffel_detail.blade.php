@@ -377,6 +377,7 @@
                                                     <input type="hidden" name="room_name" value="{{ $roomName }}">
                                                     <input type="hidden" name="free_cancel_until" value="{{ $freeUntil ?? '' }}">
                                                     <input type="hidden" name="non_refundable" value="{{ $hasTimeline ? '0' : '1' }}">
+                                                    <input type="hidden" name="cancellation_timeline" value="{{ json_encode($rate['cancellation_timeline'] ?? []) }}">
                                                     <button type="submit" class="htd-book-room-btn"><i class="fas fa-lock me-1"></i> Book This Rate</button>
                                                 </form>
                                             </div>

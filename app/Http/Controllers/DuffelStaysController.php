@@ -45,6 +45,7 @@ class DuffelStaysController extends Controller
             'roomName'        => $request->input('room_name'),
             'freeCancelUntil' => $request->input('free_cancel_until'),
             'nonRefundable'   => (bool) $request->input('non_refundable'),
+            'cancellationTimeline' => json_decode($request->input('cancellation_timeline', '[]'), true) ?: [],
         ]);
     }
 
@@ -66,6 +67,9 @@ class DuffelStaysController extends Controller
             'room_name'         => 'nullable|string',
             'free_cancel_until' => 'nullable|string',
             'non_refundable'    => 'nullable|string',
+            'cancellation_timeline' => 'nullable|string',
+            'check_in_time'     => 'nullable|string',
+            'check_out_time'    => 'nullable|string',
         ]);
 
         // Payment must be captured by Stripe before we commit the Duffel booking.
@@ -105,6 +109,9 @@ class DuffelStaysController extends Controller
             'room_name'                   => (string) ($request->room_name ?? ''),
             'free_cancel_until'           => (string) ($request->free_cancel_until ?? ''),
             'non_refundable'              => $request->boolean('non_refundable') ? '1' : '0',
+            'cancellation_timeline'       => (string) ($request->cancellation_timeline ?? '[]'),
+            'check_in_time'               => (string) ($request->check_in_time ?? ''),
+            'check_out_time'              => (string) ($request->check_out_time ?? ''),
             'payment_intent_id'           => $request->payment_intent_id,
         ];
 
@@ -197,6 +204,9 @@ class DuffelStaysController extends Controller
         $reservation['room_name']                    = $meta['room_name'] ?? null;
         $reservation['free_cancel_until']            = $meta['free_cancel_until'] ?? null;
         $reservation['non_refundable']               = ($meta['non_refundable'] ?? '0') === '1';
+        $reservation['cancellation_timeline']        = json_decode($meta['cancellation_timeline'] ?? '[]', true) ?: [];
+        $reservation['check_in_time']                = $meta['check_in_time'] ?? null;
+        $reservation['check_out_time']               = $meta['check_out_time'] ?? null;
 
         return $reservation;
     }
