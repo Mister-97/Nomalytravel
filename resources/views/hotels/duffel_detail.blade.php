@@ -74,7 +74,8 @@
 
 /* ── Rooms ── */
 .htd-room { border:1.5px solid #e8edf5; border-radius:14px; overflow:hidden; margin-bottom:16px; background:#fff; }
-.htd-room-img { width:100%; height:100%; min-height:190px; object-fit:cover; display:block; }
+.htd-room > .row { align-items:flex-start; }
+.htd-room-img { width:100%; height:220px; object-fit:cover; display:block; position:sticky; top:0; }
 .htd-room-ph { height:190px; background:linear-gradient(135deg,#f0f4ff,#dce8ff); display:flex; align-items:center; justify-content:center; font-size:2.5rem; color:#b0bcd8; }
 .htd-room-body { padding:18px 20px; }
 .htd-room-name { font-size:15px; font-weight:800; color:var(--navy); margin-bottom:6px; }
