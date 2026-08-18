@@ -466,8 +466,8 @@
                     <div class="htd-sidebar-price" style="font-size:16px;color:#999;">Check availability</div>
                     @endif
                     <div class="htd-sidebar-divider"></div>
-                    <div class="htd-sidebar-row"><span class="label"><i class="fas fa-calendar-check me-1" style="color:#C9A84C;"></i>Check-in</span><span class="val">{{ date('M d, Y', strtotime($checkIn)) }}</span></div>
-                    <div class="htd-sidebar-row"><span class="label"><i class="fas fa-calendar-times me-1" style="color:#C9A84C;"></i>Check-out</span><span class="val">{{ date('M d, Y', strtotime($checkOut)) }}</span></div>
+                    <div class="htd-sidebar-row"><span class="label"><i class="fas fa-calendar-check me-1" style="color:#C9A84C;"></i>Check-in</span><span class="val">{{ date('M d, Y', strtotime($checkIn)) }} from {{ $checkInTime }}</span></div>
+                    <div class="htd-sidebar-row"><span class="label"><i class="fas fa-calendar-times me-1" style="color:#C9A84C;"></i>Check-out</span><span class="val">{{ date('M d, Y', strtotime($checkOut)) }} by {{ $checkOutTime }}</span></div>
                     <div class="htd-sidebar-row"><span class="label"><i class="fas fa-moon me-1" style="color:#C9A84C;"></i>Nights</span><span class="val">{{ $nights }}</span></div>
                     <div class="htd-sidebar-row"><span class="label"><i class="fas fa-users me-1" style="color:#C9A84C;"></i>Guests</span><span class="val">{{ $adults }} adult{{ $adults>1?'s':'' }}</span></div>
                     <a href="#htd-rooms" class="htd-sidebar-cta"><i class="fas fa-bed me-2"></i>View Available Rooms</a>
